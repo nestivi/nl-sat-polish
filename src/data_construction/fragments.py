@@ -14,7 +14,7 @@ class SyllogisticTemplates:
   def __init__(self, functions, lexicon):
     self.quantifiers = ["all", "exists"]
     self.functions = functions
-    self.lexicon = lexicon # Zapisanie leksykonu do klasy
+    self.lexicon = lexicon
 
   def template_natural_language(self, template_name):
     templates = {
@@ -41,20 +41,16 @@ class SyllogisticTemplates:
     elif quantifier == "exists":
       det = random.choice(["pewien", "jakiś"])
 
-    negs = [negations[variables[0]], negations[variables[1]]]
-
-    sing = "pl" if det in ["każdy", "pewien", "nie"] else "si"
     template_id = ""
 
     if negations[variables[0]] == True:
       template_id += "neg_"
-    template_id += sing
+      
+    template_id += "si"
     
     if negations[variables[1]] == True:
       template_id += "_neg"
       
-    # NOWE: Odpytanie słownika o przypadki.
-    # variables[0] to podmiot (Mianownik), variables[1] to obiekt po 'jest' (Narzędnik)
     subj = self.lexicon[variables[0]]["M"]
     obj = self.lexicon[variables[1]]["N"]
 
