@@ -25,11 +25,11 @@ pip install -e .
 
 3. Run program:
 ```bash
-nl-sat-gen --fragment "syllogistic" --sampling_file "sampling.csv" --num_datapoints 10 
+nl-sat-gen --fragment "syllogistic" --sampling_file "sampling.csv" --num_datapoints 10 --output_file "results/fragment_pl.csv"
 ```
 or
 ```bash
-python data_construction.py --fragment "syllogistic" --sampling_file "sampling.csv" --num_datapoints 10
+python data_construction.py --fragment "syllogistic" --sampling_file "sampling.csv" --num_datapoints 10 --output_file "results/fragment_pl.csv"
 ```
 
 ### Data Construction
@@ -51,7 +51,7 @@ python data_construction.py \
     --time_out <time out for the sat solver> \
     --prob <probability for complex fragment compared to simple ones> \
     --num_datapoints 4000 \
-    --output_file "data-construction/fragment_pl.csv"
+    --output_file "results/fragment_pl.csv"
 ```
 
 
