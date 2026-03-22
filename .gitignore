@@ -1,4 +1,8 @@
+# venv
 /env
 .venv/
 __pycache__/
 nl_sat_pl.egg-info/
+
+# results
+results/*.csv
