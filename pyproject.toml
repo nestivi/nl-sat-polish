@@ -25,7 +25,10 @@ dependencies = [
 ]
 
 [project.scripts]
-nl-sat-gen = "data_construction:main"
+nl-sat-gen = "data_construction.data_construction:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools]
 py-modules = ["data_construction", "fragments"]
