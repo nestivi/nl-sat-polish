@@ -28,5 +28,4 @@ dependencies = [
 nl-sat-gen = "data_construction:main"
 
 [tool.setuptools]
-# Wskazujemy konkretne pliki do spakowania, skoro nie są w osobnym folderze "src"
 py-modules = ["data_construction", "fragments"]
