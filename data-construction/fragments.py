@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------
+# Modified by nestivi
+# Modifications: Added a Polish language lexicon, implemented dynamic 
+# grammatical inflection, and adapted the logic to support double negation.
+# Original code licensed under the Apache License, Version 2.0.
+# ---------------------------------------------------------------------------
+
 import random
 from z3 import *
 from pprint import pprint
