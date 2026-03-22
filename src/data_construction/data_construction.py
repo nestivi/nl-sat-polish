@@ -35,7 +35,7 @@ import time
 import pandas as pd
 
 from nltk.parse.generate import generate
-from fragments import (
+from .fragments import (
   SyllogisticTemplates,
   RelationalSyllogiticTemplates, 
   RelativeClausesTemplates, 
@@ -45,71 +45,71 @@ from fragments import (
 
 from tqdm import tqdm
 
-# nouns = [
-#     "aktor", "artysta", "kamerdyner", "oszust", "dyrektor",
-#     "ekspert", "rybak", "sędzia", "przysięgły", "malarz", "muzyk",
-#     "policjant", "strażak", "profesor", "szeryf", "żołnierz", "student",
-#     "filozof", "nauczyciel", "turysta", "prawnik", "lekarz", "inżynier",
-#     "weterynarz", "dentysta", "księgowy", "technik", "elektryk",
-#     "psycholog", "fizyk", "hydraulik", "kelner", "mechanik", "kucharz",
-#     "bibliotekarz", "fryzjer", "ekonomista", "barman", "kasjer", "chirurg",
-#     "pilot", "rzeźnik", "optyk", "sportowiec", "sprzątacz",
-#     "aktuariusz", "żeglarz", "terapeuta", "tajny_agent", "hodowca_zwierząt", "kontroler_ruchu_lotniczego",
-#     "antropolog", "treser_zwierząt", "alergolog", "agent_nieruchomości", "archeolog",
-#     "astronom", "trener_atletyczny", "audiolog", "audytor", "woźny_sądowy",
-#     "piekarz", "fryzjer_męski", "urzędnik", "kartograf", "kręgarz", "tancerz", "epidemiolog",
-#     "rolnik", "florysta", "leśniczy", "kierowca_ciężarówki", "jubiler", "projektant_wnętrz",
-#     "maszynista", "matematyk", "sekretarz", "fotograf", "spiker_radiowy", "dekarz",
-#     "brukarz", "taksówkarz", "historyk", "poeta", "kaskader", "monologista", "wydawca",
-#     "skryba", "bloger", "redaktor", "prezes", "kontroler_biletów", "zawiadowca_stacji", "geodeta",
-#     "wiertacz", "uczony", "analityk_ilościowy", "dyrektor_finansowy", "dyrektor_techniczny", "dyrektor_it", "informatyk", "więzień",
-#     "gość", "odwiedzający", "pomocnik", "żywiciel", "gospodarz", "duch", "rozgrywający", "strzelec",
-#     "osadnik", "zdobywca", "cynik", "wiedźma", "kapitan", "analityk_biznesowy", "naukowiec_danych",
-#     "handlowiec", "dyrektor_szkoły", "baletnica", "piłkarz", "krykiecista", "tenisista", "wykładowca",
-#     "pacjent", "naukowiec_ai", "rowerzysta", "szachista", "strateg",
-#     "naukowiec", "rodzic", "agent_fbi", "obrońca", "napastnik", "watażka", "inżynier_nlp",
-#     "arcymistrz", "mistrz", "król", "królowa", "rycerz", "książę", "księżniczka", "niemowlę", "dorosły",
-#     "doradca", "zapaśnik", "wojownik", "bokser", "pszczelarz", "dj", "skrzypek",
-#     "dyrygent", "gimnastyk"
-# ]
+nouns = [
+    "aktor", "artysta", "kamerdyner", "oszust", "dyrektor",
+    "ekspert", "rybak", "sędzia", "przysięgły", "malarz", "muzyk",
+    "policjant", "strażak", "profesor", "szeryf", "żołnierz", "student",
+    "filozof", "nauczyciel", "turysta", "prawnik", "lekarz", "inżynier",
+    "weterynarz", "dentysta", "księgowy", "technik", "elektryk",
+    "psycholog", "fizyk", "hydraulik", "kelner", "mechanik", "kucharz",
+    "bibliotekarz", "fryzjer", "ekonomista", "barman", "kasjer", "chirurg",
+    "pilot", "rzeźnik", "optyk", "sportowiec", "sprzątacz",
+    "aktuariusz", "żeglarz", "terapeuta", "tajny_agent", "hodowca_zwierząt", "kontroler_ruchu_lotniczego",
+    "antropolog", "treser_zwierząt", "alergolog", "agent_nieruchomości", "archeolog",
+    "astronom", "trener_atletyczny", "audiolog", "audytor", "woźny_sądowy",
+    "piekarz", "fryzjer_męski", "urzędnik", "kartograf", "kręgarz", "tancerz", "epidemiolog",
+    "rolnik", "florysta", "leśniczy", "kierowca_ciężarówki", "jubiler", "projektant_wnętrz",
+    "maszynista", "matematyk", "sekretarz", "fotograf", "spiker_radiowy", "dekarz",
+    "brukarz", "taksówkarz", "historyk", "poeta", "kaskader", "monologista", "wydawca",
+    "skryba", "bloger", "redaktor", "prezes", "kontroler_biletów", "zawiadowca_stacji", "geodeta",
+    "wiertacz", "uczony", "analityk_ilościowy", "dyrektor_finansowy", "dyrektor_techniczny", "dyrektor_it", "informatyk", "więzień",
+    "gość", "odwiedzający", "pomocnik", "żywiciel", "gospodarz", "duch", "rozgrywający", "strzelec",
+    "osadnik", "zdobywca", "cynik", "wiedźma", "kapitan", "analityk_biznesowy", "naukowiec_danych",
+    "handlowiec", "dyrektor_szkoły", "baletnica", "piłkarz", "krykiecista", "tenisista", "wykładowca",
+    "pacjent", "naukowiec_ai", "rowerzysta", "szachista", "strateg",
+    "naukowiec", "rodzic", "agent_fbi", "obrońca", "napastnik", "watażka", "inżynier_nlp",
+    "arcymistrz", "mistrz", "król", "królowa", "rycerz", "książę", "księżniczka", "niemowlę", "dorosły",
+    "doradca", "zapaśnik", "wojownik", "bokser", "pszczelarz", "dj", "skrzypek",
+    "dyrygent", "gimnastyk"
+]
 
-# count_furniture = [
-#     "krzesło", "stół", "biurko", "taboret", "kanapa", "regał",
-#     "łóżko", "materac", "komoda", "futon", "stolik_nocny", "pojemnik_do_przechowywania",
-#     "hamak", "stół_bilardowy", "pianino", "szachownica", "drzwi"
-# ]
+count_furniture = [
+    "krzesło", "stół", "biurko", "taboret", "kanapa", "regał",
+    "łóżko", "materac", "komoda", "futon", "stolik_nocny", "pojemnik_do_przechowywania",
+    "hamak", "stół_bilardowy", "pianino", "szachownica", "drzwi"
+]
 
-# count_animals = [
-#     "mrówkojad_afrykański", "pies", "alpaka", "pancernik", "mrówkojad", "pingwin",
-#     "mrówka", "niedźwiedź", "bonobo", "bóbr", "ptak", "sowa", "motyl",
-#     "bawół", "trzmiel", "żaba", "wieloryb", "bizon", "borsuk", "pawian",
-#     "nosorożec", "wielbłąd", "kot", "kurczak", "gepard", "kakadu", "krowa", "krab",
-#     "gąsienica", "szympans", "nur", "pająk", "krokodyl", "kojot", "szynszyla",
-#     "kaczka", "jeleń", "delfin", "dingo", "osioł", "węgorz", "słoń", "emu", "goryl", "sokół",
-#     "lis", "fretka", "gerbil", "pasikonik", "suseł", "koza", "hiena", "koń", "hipopotam",
-#     "jaguar", "kangur", "lemur", "lew", "ryś", "jaszczurka", "świstak", "norka", "piżmak", "mysz",
-#     "ara", "łoś", "traszka", "struś", "wydra", "świnia", "maskonur", "puma", "pelikan", "paw",
-#     "królik", "wąż", "renifer", "szop", "szczur", "owca", "sęp", "wombat", "wilk", "guziec",
-#     "mors", "łasica", "dzik", "zebra", "foka"
-# ]
+count_animals = [
+    "mrówkojad_afrykański", "pies", "alpaka", "pancernik", "mrówkojad", "pingwin",
+    "mrówka", "niedźwiedź", "bonobo", "bóbr", "ptak", "sowa", "motyl",
+    "bawół", "trzmiel", "żaba", "wieloryb", "bizon", "borsuk", "pawian",
+    "nosorożec", "wielbłąd", "kot", "kurczak", "gepard", "kakadu", "krowa", "krab",
+    "gąsienica", "szympans", "nur", "pająk", "krokodyl", "kojot", "szynszyla",
+    "kaczka", "jeleń", "delfin", "dingo", "osioł", "węgorz", "słoń", "emu", "goryl", "sokół",
+    "lis", "fretka", "gerbil", "pasikonik", "suseł", "koza", "hiena", "koń", "hipopotam",
+    "jaguar", "kangur", "lemur", "lew", "ryś", "jaszczurka", "świstak", "norka", "piżmak", "mysz",
+    "ara", "łoś", "traszka", "struś", "wydra", "świnia", "maskonur", "puma", "pelikan", "paw",
+    "królik", "wąż", "renifer", "szop", "szczur", "owca", "sęp", "wombat", "wilk", "guziec",
+    "mors", "łasica", "dzik", "zebra", "foka"
+]
 
-# verbs = [
-#     "lubić", "podziwiać", "robić", "psuć", "zatrudniać",
-#     "uderzać", "zabijać", "walczyć", "dotykać", "zgładzić",
-#     "aprobować", "bronić", "zastępować", "gonić", "polować",
-#     "nie_lubić", "rozpoznawać", "rozumieć", "czuć",
-#     "kochać", "nienawidzić", "imponować", "wiedzieć", "zauważać", "dostrzegać",
-#     "widzieć", "pamiętać", "zaskakiwać", "woleć",
-#     "rysować", "oskarżać", "uwielbiać", "doradzać", "doceniać",
-#     "podchodzić", "zadziwiać", "potrzebować", "wołać", "wierzyć",
-#     "naśladować", "służyć", "konsultować", "przekonywać", "krytykować",
-#     "pragnąć", "wątpić", "zachęcać", "badać",
-#     "karmić", "wybaczać", "przytulać", "prowadzić_dochodzenie", "całować",
-#     "wspominać", "wisieć_dłużnym", "namawiać", "proponować", "obiecywać",
-#     "uderzyć_pięścią", "strzelać", "grozić", "tolerować", "ostrzegać",
-#     "szanować", "podziwiać_z_zachwytem", "fantazjować", "użytkować", "mordować",
-#     "wspierać"
-# ]
+verbs = [
+    "lubić", "podziwiać", "robić", "psuć", "zatrudniać",
+    "uderzać", "zabijać", "walczyć", "dotykać", "zgładzić",
+    "aprobować", "bronić", "zastępować", "gonić", "polować",
+    "nie_lubić", "rozpoznawać", "rozumieć", "czuć",
+    "kochać", "nienawidzić", "imponować", "wiedzieć", "zauważać", "dostrzegać",
+    "widzieć", "pamiętać", "zaskakiwać", "woleć",
+    "rysować", "oskarżać", "uwielbiać", "doradzać", "doceniać",
+    "podchodzić", "zadziwiać", "potrzebować", "wołać", "wierzyć",
+    "naśladować", "służyć", "konsultować", "przekonywać", "krytykować",
+    "pragnąć", "wątpić", "zachęcać", "badać",
+    "karmić", "wybaczać", "przytulać", "prowadzić_dochodzenie", "całować",
+    "wspominać", "wisieć_dłużnym", "namawiać", "proponować", "obiecywać",
+    "uderzyć_pięścią", "strzelać", "grozić", "tolerować", "ostrzegać",
+    "szanować", "podziwiać_z_zachwytem", "fantazjować", "użytkować", "mordować",
+    "wspierać"
+]
 
 # =========================================================================
 # SYSTEM LEKSYKALNY (SŁOWNIK)
