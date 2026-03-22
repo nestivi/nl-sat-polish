@@ -1,49 +1,24 @@
-from operator import sub
-
-from z3 import *
-import matplotlib.pyplot as plt
-
-import seaborn as sns
-
-import argparse
-
-from nltk import *
-from nltk.sem.drt import DrtParser
-from nltk.sem import logic
-import nltk
-from nltk.sem import Expression
-from nltk import load_parser
-from nltk.sem import Valuation, Model
-from nltk.corpus import brown
-
-from scipy.stats import beta
-from numpy import histogram
-
-
 import random
-import re
-import time
-
-import numpy as np
-import pandas as pd
-
+from z3 import *
+from pprint import pprint
 
 class SyllogisticTemplates:
 
-  def __init__(self, functions):
+  def __init__(self, functions, lexicon):
     self.quantifiers = ["all", "exists"]
     self.functions = functions
+    self.lexicon = lexicon # Zapisanie leksykonu do klasy
 
   def template_natural_language(self, template_name):
     templates = {
-        "si": "{} {} is a {}",
-        "pl": "{} {} are {}",
-        "si_neg": "{} {} is not a {}",
-        "pl_neg": "{} {} are not {}", 
-        "neg_si": "{} non-{} is a {}",
-        "neg_pl": "{} non-{} are {}",
-        "neg_si_neg": "{} non-{} is not a {}",
-        "neg_pl_neg": "{} non-{} are not {}", 
+        "si": "{} {} jest {}",
+        "pl": "{} {} są {}",
+        "si_neg": "{} {} nie jest {}",
+        "pl_neg": "{} {} nie są {}", 
+        "neg_si": "{} nie-{} jest {}",
+        "neg_pl": "{} nie-{} są {}",
+        "neg_si_neg": "{} nie-{} nie jest {}",
+        "neg_pl_neg": "{} nie-{} nie są {}", 
     }
 
     return templates[template_name]
@@ -53,25 +28,30 @@ class SyllogisticTemplates:
 
     if quantifier == "all":
       if negations[variables[1]] == True :
-        det = "no"
+        det = "żaden"
       else :
-        det = random.choice(["all", "every"])
+        det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
-      det = random.choice(["some", "a"])
+      det = random.choice(["pewien", "jakiś"])
 
     negs = [negations[variables[0]], negations[variables[1]]]
 
-    sing = "pl" if det in ["all", "some", "not"] else "si"
+    sing = "pl" if det in ["każdy", "pewien", "nie"] else "si"
     template_id = ""
 
     if negations[variables[0]] == True:
       template_id += "neg_"
     template_id += sing
-    if det != "no":
-      if negations[variables[1]] == True:
-        template_id += "_neg"
+    
+    if negations[variables[1]] == True:
+      template_id += "_neg"
       
-    return self.template_natural_language(template_id).format(det, variables[0], variables[1])
+    # NOWE: Odpytanie słownika o przypadki.
+    # variables[0] to podmiot (Mianownik), variables[1] to obiekt po 'jest' (Narzędnik)
+    subj = self.lexicon[variables[0]]["M"]
+    obj = self.lexicon[variables[1]]["N"]
+
+    return self.template_natural_language(template_id).format(det, subj, obj)
 
   def generate_logic_formula(self, quantifier, predicates, negations, x, y):
 
@@ -118,20 +98,21 @@ class SyllogisticTemplates:
 
 class RelationalSyllogiticTemplates : 
 
-  def __init__(self, functions):
+  def __init__(self, functions, lexicon):
     self.quantifiers = ["all", "exists"]
     self.functions = functions
+    self.lexicon = lexicon
 
   def template_natural_language(self, template_name):
     templates = {
         "noun_verb_noun": "{} {} {} {} {}",
-        "noun_verb_neg_noun": "{} {} {} {} non-{}",
-        "noun_neg_verb_noun": "{} {} does not {} {} {}",
-        "noun_neg_verb_neg_noun": "{} {} does not {} {} non-{}",
-        "neg_noun_verb_noun": "{} non-{} {} {} {}",
-        "neg_noun_verb_neg_noun": "{} non-{} {} {} non-{}",
-        "neg_noun_neg_verb_noun": "{} non-{} does not {} {} {}",
-        "neg_noun_neg_verb_neg_noun": "{} non-{} does not {} {} non-{}",
+        "noun_verb_neg_noun": "{} {} {} {} nie-{}",
+        "noun_neg_verb_noun": "{} {} nie {} {} {}",
+        "noun_neg_verb_neg_noun": "{} {} nie {} {} nie-{}",
+        "neg_noun_verb_noun": "{} nie-{} {} {} {}",
+        "neg_noun_verb_neg_noun": "{} nie-{} {} {} nie-{}",
+        "neg_noun_neg_verb_noun": "{} nie-{} nie {} {} {}",
+        "neg_noun_neg_verb_neg_noun": "{} nie-{} nie {} {} nie-{}",
     }
     
     return templates[template_name]
@@ -139,15 +120,15 @@ class RelationalSyllogiticTemplates :
   def quantifier_det(self, quantifier):
     det = None
     if quantifier == "all":
-      det = random.choice(["all", "every"])
+      det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
-      det = random.choice(["some", "a"])
+      det = random.choice(["pewien", "jakiś"])
 
     return det
 
 
   def natural_language_sentence_generation(self, quantifiers, variables, negations):
-    dets = [self.quantifier_det(quantifier) for quantifier in quantifiers]
+    dets = [self.quantifier_det(quantifiers[0]), self.quantifier_det(quantifiers[1])]
 
     template_id = ""
 
@@ -156,27 +137,39 @@ class RelationalSyllogiticTemplates :
     template_id += "noun_"
 
     if negations[variables[2]] == True :
+      # NAPRAWA LOGIKI PRZECZEŃ: zawsze dodajemy "neg_" gdy czasownik jest zanegowany
+      template_id += "neg_"
       if quantifiers[0] == "all":
-        dets[0] = "no"
+        dets[0] = "żaden"
         if quantifiers[1] == "all":
-          dets[1] = "any"
+          dets[1] = "żaden"
         else :
-          dets[1] = "every"
+          dets[1] = "każdy"
       elif quantifiers[0] == "exists" and quantifiers[1] == "exists":
-        dets[1] = "no"
-      else :
-        template_id += "neg_"
+        dets[1] = "żaden"
+      
     template_id += "verb_"
 
     if negations[variables[1]] == True:
       template_id += "neg_"
     template_id += "noun"
 
+    # ODMIANA SŁÓW:
+    subj = self.lexicon[variables[0]]["M"] # Podmiot
+    
+    # Czasownik (zakładamy liczbę pojedynczą, bo dets[0] to "każdy", "pewien" lub "żaden")
+    verb = self.lexicon[variables[2]]["si"] 
+    
+    # Obiekt (jeśli czasownik zanegowany -> Dopełniacz, jeśli twierdzący -> Biernik)
+    if negations[variables[2]] == True:
+        obj = self.lexicon[variables[1]]["D"]
+    else:
+        obj = self.lexicon[variables[1]]["B"]
       
-    sentence = self.template_natural_language(template_id).format(dets[0], variables[0], variables[2], dets[1], variables[1])
+    sentence = self.template_natural_language(template_id).format(dets[0], subj, verb, dets[1], obj)
 
-    if dets[0] in ["some", "all"]:
-      return sentence.replace(" does not ", " do not ")
+    if dets[0] in ["pewien", "każdy"]:
+      return sentence.replace(" nie ", " nie ")
     return sentence
 
   def generate_logic_formula(self, quantifiers, predicates, negations, x, y):
@@ -234,28 +227,29 @@ class RelationalSyllogiticTemplates :
 
 class RelativeClausesTemplates:
 
-  def __init__(self, functions):
+  def __init__(self, functions, lexicon):
     self.quantifiers = ["all", "exists"]
     self.functions = functions
+    self.lexicon = lexicon
 
   def template_natural_language(self, template_name):
     templates = {
-      "noun_noun_si": "{} {} who is a {} is a {}",
-      "noun_noun_pl": "{} {} who are {} are {}",
-      "noun_neg_noun_si": "{} {} who is not a {} is a {}",
-      "noun_neg_noun_pl": "{} {} who are not {} are {}",
-      "noun_noun_neg_si": "{} {} who is a {} is not a {}",
-      "noun_noun_neg_pl": "{} {} who are {} are not {}",
-      "noun_neg_noun_neg_si": "{} {} who is not a {} is not a {}",
-      "noun_neg_noun_neg_pl": "{} {} who are not {} are not {}",
-      "neg_noun_noun_si": "{} non-{} who is a {} is a {}",
-      "neg_noun_noun_pl": "{} non-{} who are {} are {}",
-      "neg_noun_neg_noun_si": "{} non-{} who is not a {} is a {}",
-      "neg_noun_neg_noun_pl": "{} non-{} who are not {} are {}",
-      "neg_noun_noun_neg_si": "{} non-{} who is a {} is not a {}",
-      "neg_noun_noun_neg_pl": "{} non-{} who are {} are not {}",
-      "neg_noun_neg_noun_neg_si": "{} non-{} who is not a {} is not a {}",
-      "neg_noun_neg_noun_neg_pl": "{} non-{} who are not {} are not {}",
+      "noun_noun_si": "{} {} który jest {} jest {}",
+      "noun_noun_pl": "{} {} którzy są {} są {}",
+      "noun_neg_noun_si": "{} {} który nie jest {} jest {}",
+      "noun_neg_noun_pl": "{} {} którzy nie są {} są {}",
+      "noun_noun_neg_si": "{} {} który jest {} nie jest {}",
+      "noun_noun_neg_pl": "{} {} którzy są {} nie są {}",
+      "noun_neg_noun_neg_si": "{} {} który nie jest {} nie jest {}",
+      "noun_neg_noun_neg_pl": "{} {} którzy nie są {} nie są {}",
+      "neg_noun_noun_si": "{} nie-{} który jest {} jest {}",
+      "neg_noun_noun_pl": "{} nie-{} którzy są {} są {}",
+      "neg_noun_neg_noun_si": "{} nie-{} który nie jest {} jest {}",
+      "neg_noun_neg_noun_pl": "{} nie-{} którzy nie są {} są {}",
+      "neg_noun_noun_neg_si": "{} nie-{} który jest {} nie jest {}",
+      "neg_noun_noun_neg_pl": "{} nie-{} którzy są {} nie są {}",
+      "neg_noun_neg_noun_neg_si": "{} nie-{} który nie jest {} nie jest {}",
+      "neg_noun_neg_noun_neg_pl": "{} nie-{} którzy nie są {} nie są {}",
     }
 
     return templates[template_name]
@@ -263,9 +257,9 @@ class RelativeClausesTemplates:
   def quantifier_det(self, quantifier):
     det = None
     if quantifier == "all":
-      det = random.choice(["all", "every"])
+      det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
-      det = random.choice(["some", "a"])
+      det = random.choice(["pewien", "jakiś"])
 
     return det
 
@@ -274,7 +268,7 @@ class RelativeClausesTemplates:
     det = self.quantifier_det(quantifier)
 
     negs = [negations[variables[0]], negations[variables[1]],negations[variables[2]]]
-    sing = "pl" if det in ["all", "some"] else "si"
+    sing = "pl" if det in ["każdy", "pewien"] else "si"
 
     template_id = ""
     if negations[variables[0]] == True :
@@ -289,17 +283,21 @@ class RelativeClausesTemplates:
 
 
     if negations[variables[2]] == True :
+      template_id += "neg_" # NAPRAWA: Dodanie negacji zawsze
       if quantifier == "all":
-        det = "no"
-      else :
-        template_id += "neg_"
+        det = "żaden"
 
     if sing == "pl":
       template_id += "pl"
     else :
       template_id += "si"
 
-    return self.template_natural_language(template_id).format(det, variables[0], variables[1], variables[2])
+    # ODMIANA:
+    subj = self.lexicon[variables[0]]["M"]
+    obj1 = self.lexicon[variables[1]]["N"] # po 'jest' w zdaniu względnym
+    obj2 = self.lexicon[variables[2]]["N"] # po 'jest' głównym
+
+    return self.template_natural_language(template_id).format(det, subj, obj1, obj2)
 
   def generate_logic_formula(self, quantifier, predicates, negations, x, y):
 
@@ -342,83 +340,84 @@ class RelativeClausesTemplates:
 
 
 class RelativeTVTemplates:
-  def __init__(self, functions):
+  def __init__(self, functions, lexicon):
     self.quantifiers = ["all", "exists"]
     self.functions = functions
+    self.lexicon = lexicon
 
   def template_natural_language(self, template_name, sub_obj_type):
     if sub_obj_type == "subject":
       templates = {
-          "2q_n_v_n_noun_si": "{} {} who {} {} {} is a {}",
-          "2q_n_v_n_noun_pl": "{} {} who {} {} {} are {}",
-          "2q_n_v_n_noun_neg_si": "{} {} who {} {} {} is not a {}",
-          "2q_n_v_n_noun_neg_pl": "{} {} who {} {} {} are not {}",
-          "2q_n_v_n_neg_noun_si": "{} {} who {} {} non-{} is a {}",
-          "2q_n_v_n_neg_noun_pl": "{} {} who {} {} non-{} are {}",
-          "2q_n_v_n_neg_noun_neg_si": "{} {} who {} {} non-{} is not a {}",
-          "2q_n_v_n_neg_noun_neg_pl": "{} {} who {} {} non-{} are not {}",
-          "2q_n_v_neg_n_noun_si": "{} {} who does not {} {} {} is a {}",
-          "2q_n_v_neg_n_noun_pl": "{} {} who do not {} {} {} are {}",
-          "2q_n_v_neg_n_noun_neg_si": "{} {} who does not {} {} {} is not a {}",
-          "2q_n_v_neg_n_noun_neg_pl": "{} {} who do not {} {} {} are not {}",
-          "2q_n_v_neg_n_neg_noun_si": "{} {} who does not {} {} non-{} is a {}",
-          "2q_n_v_neg_n_neg_noun_pl": "{} {} who do not {} {} non-{} are {}",
-          "2q_n_v_neg_n_neg_noun_neg_si": "{} {} who does not {} {} non-{} is not a {}",
-          "2q_n_v_neg_n_neg_noun_neg_pl": "{} {} who do not {} {} non-{} are not {}",
-          "2q_n_neg_v_n_noun_si": "{} non-{} who {} {} {} is a {}",
-          "2q_n_neg_v_n_noun_pl": "{} non-{} who {} {} {} are {}",
-          "2q_n_neg_v_n_noun_neg_si": "{} non-{} who {} {} {} is not a {}",
-          "2q_n_neg_v_n_noun_neg_pl": "{} non-{} who {} {} {} are not {}",
-          "2q_n_neg_v_n_neg_noun_si": "{} non-{} who {} {} non-{} is a {}",
-          "2q_n_neg_v_n_neg_noun_pl": "{} non-{} who {} {} non-{} are {}",
-          "2q_n_neg_v_n_neg_noun_neg_si": "{} non-{} who {} {} non-{} is not a {}",
-          "2q_n_neg_v_n_neg_noun_neg_pl": "{} non-{} who {} {} non-{} are not {}",
-          "2q_n_neg_v_neg_n_noun_si": "{} non-{} who does not {} {} {} is a {}",
-          "2q_n_neg_v_neg_n_noun_pl": "{} non-{} who do not {} {} {} are {}",
-          "2q_n_neg_v_neg_n_noun_neg_si": "{} non-{} who does not {} {} {} is not a {}",
-          "2q_n_neg_v_neg_n_noun_neg_pl": "{} non-{} who do not {} {} {} are not {}",
-          "2q_n_neg_v_neg_n_neg_noun_si": "{} non-{} who does not {} {} non-{} is a {}",
-          "2q_n_neg_v_neg_n_neg_noun_pl": "{} non-{} who do not {} {} non-{} are {}",
-          "2q_n_neg_v_neg_n_neg_noun_neg_si": "{} non-{} who does not {} {} non-{} is not a {}",
-          "2q_n_neg_v_neg_n_neg_noun_neg_pl": "{} non-{} who do not {} {} non-{} are not {}",
+          "2q_n_v_n_noun_si": "{} {} który {} {} {} jest {}",
+          "2q_n_v_n_noun_pl": "{} {} którzy {} {} {} są {}",
+          "2q_n_v_n_noun_neg_si": "{} {} który {} {} {} nie jest {}",
+          "2q_n_v_n_noun_neg_pl": "{} {} którzy {} {} {} nie są {}",
+          "2q_n_v_n_neg_noun_si": "{} {} który {} {} nie-{} jest {}",
+          "2q_n_v_n_neg_noun_pl": "{} {} którzy {} {} nie-{} są {}",
+          "2q_n_v_n_neg_noun_neg_si": "{} {} który {} {} nie-{} nie jest {}",
+          "2q_n_v_n_neg_noun_neg_pl": "{} {} którzy {} {} nie-{} nie są {}",
+          "2q_n_v_neg_n_noun_si": "{} {} który nie {} {} {} jest {}",
+          "2q_n_v_neg_n_noun_pl": "{} {} którzy nie {} {} {} są {}",
+          "2q_n_v_neg_n_noun_neg_si": "{} {} który nie {} {} {} nie jest {}",
+          "2q_n_v_neg_n_noun_neg_pl": "{} {} którzy nie {} {} {} nie są {}",
+          "2q_n_v_neg_n_neg_noun_si": "{} {} który nie {} {} nie-{} jest {}",
+          "2q_n_v_neg_n_neg_noun_pl": "{} {} którzy nie {} {} nie-{} są {}",
+          "2q_n_v_neg_n_neg_noun_neg_si": "{} {} który nie {} {} nie-{} nie jest {}",
+          "2q_n_v_neg_n_neg_noun_neg_pl": "{} {} którzy nie {} {} nie-{} nie są {}",
+          "2q_n_neg_v_n_noun_si": "{} nie-{} który {} {} {} jest {}",
+          "2q_n_neg_v_n_noun_pl": "{} nie-{} którzy {} {} {} są {}",
+          "2q_n_neg_v_n_noun_neg_si": "{} nie-{} który {} {} {} nie jest {}",
+          "2q_n_neg_v_n_noun_neg_pl": "{} nie-{} którzy {} {} {} nie są {}",
+          "2q_n_neg_v_n_neg_noun_si": "{} nie-{} który {} {} nie-{} jest {}",
+          "2q_n_neg_v_n_neg_noun_pl": "{} nie-{} którzy {} {} nie-{} są {}",
+          "2q_n_neg_v_n_neg_noun_neg_si": "{} nie-{} który {} {} nie-{} nie jest {}",
+          "2q_n_neg_v_n_neg_noun_neg_pl": "{} nie-{} którzy {} {} nie-{} nie są {}",
+          "2q_n_neg_v_neg_n_noun_si": "{} nie-{} który nie {} {} {} jest {}",
+          "2q_n_neg_v_neg_n_noun_pl": "{} nie-{} którzy nie {} {} {} są {}",
+          "2q_n_neg_v_neg_n_noun_neg_si": "{} nie-{} który nie {} {} {} nie jest {}",
+          "2q_n_neg_v_neg_n_noun_neg_pl": "{} nie-{} którzy nie {} {} {} nie są {}",
+          "2q_n_neg_v_neg_n_neg_noun_si": "{} nie-{} który nie {} {} nie-{} jest {}",
+          "2q_n_neg_v_neg_n_neg_noun_pl": "{} nie-{} którzy nie {} {} nie-{} są {}",
+          "2q_n_neg_v_neg_n_neg_noun_neg_si": "{} nie-{} który nie {} {} nie-{} nie jest {}",
+          "2q_n_neg_v_neg_n_neg_noun_neg_pl": "{} nie-{} którzy nie {} {} nie-{} nie są {}",
       }
 
       return templates[template_name]
 
     if sub_obj_type == "object":
       templates = {
-          "2q_n_v_n_noun_si": "{} {} {} {} {} who is a {}",
-          "2q_n_v_n_noun_pl": "{} {} {} {} {} who are {}",
-          "2q_n_v_n_noun_neg_si": "{} {} {} {} {} who is not a {}",
-          "2q_n_v_n_noun_neg_pl": "{} {} {} {} {} who are not {}",
-          "2q_n_v_n_neg_noun_si": "{} {} {} {} non-{} who is a {}",
-          "2q_n_v_n_neg_noun_pl": "{} {} {} {} non-{} who are {}",
-          "2q_n_v_n_neg_noun_neg_si": "{} {} {} {} non-{} who is not a {}",
-          "2q_n_v_n_neg_noun_neg_pl": "{} {} {} {} non-{} who are not {}",
-          "2q_n_v_neg_n_noun_si": "{} {} does not {} {} {} who is a {}",
-          "2q_n_v_neg_n_noun_pl": "{} {} do not {} {} {} who are {}",
-          "2q_n_v_neg_n_noun_neg_si": "{} {} does not {} {} {} who is not a {}",
-          "2q_n_v_neg_n_noun_neg_pl": "{} {} do not {} {} {} who are not {}",
-          "2q_n_v_neg_n_neg_noun_si": "{} {} does not {} {} non-{} who is a {}",
-          "2q_n_v_neg_n_neg_noun_pl": "{} {} do not {} {} non-{} who are {}",
-          "2q_n_v_neg_n_neg_noun_neg_si": "{} {} does not {} {} non-{} who is not a {}",
-          "2q_n_v_neg_n_neg_noun_neg_pl": "{} {} do not {} {} non-{} who are not {}",
-          "2q_n_neg_v_n_noun_si": "{} non-{} {} {} {} who is a {}",
-          "2q_n_neg_v_n_noun_pl": "{} non-{} {} {} {} who are {}",
-          "2q_n_neg_v_n_noun_neg_si": "{} non-{} {} {} {} who is not a {}",
-          "2q_n_neg_v_n_noun_neg_pl": "{} non-{} {} {} {} who are not {}",
-          "2q_n_neg_v_n_neg_noun_si": "{} non-{} {} {} non-{} who is a {}",
-          "2q_n_neg_v_n_neg_noun_pl": "{} non-{} {} {} non-{} who are {}",
-          "2q_n_neg_v_n_neg_noun_neg_si": "{} non-{} {} {} non-{} who is not a {}",
-          "2q_n_neg_v_n_neg_noun_neg_pl": "{} non-{} {} {} non-{} who are not {}",
-          "2q_n_neg_v_neg_n_noun_si": "{} non-{} does not {} {} {} who is a {}",
-          "2q_n_neg_v_neg_n_noun_pl": "{} non-{} do not {} {} {} who are {}",
-          "2q_n_neg_v_neg_n_noun_neg_si": "{} non-{} does not {} {} {} who is not a {}",
-          "2q_n_neg_v_neg_n_noun_neg_pl": "{} non-{} do not {} {} {} who are not {}",
-          "2q_n_neg_v_neg_n_neg_noun_si": "{} non-{} does not {} {} non-{} who is a {}",
-          "2q_n_neg_v_neg_n_neg_noun_pl": "{} non-{} do not {} {} non-{} who are {}",
-          "2q_n_neg_v_neg_n_neg_noun_neg_si": "{} non-{} does not {} {} non-{} who is not a {}",
-          "2q_n_neg_v_neg_n_neg_noun_neg_pl": "{} non-{} do not {} {} non-{} who are not {}",
+          "2q_n_v_n_noun_si": "{} {} {} {} {} który jest {}",
+          "2q_n_v_n_noun_pl": "{} {} {} {} {} którzy są {}",
+          "2q_n_v_n_noun_neg_si": "{} {} {} {} {} który nie jest {}",
+          "2q_n_v_n_noun_neg_pl": "{} {} {} {} {} którzy nie są {}",
+          "2q_n_v_n_neg_noun_si": "{} {} {} {} nie-{} który jest {}",
+          "2q_n_v_n_neg_noun_pl": "{} {} {} {} nie-{} którzy są {}",
+          "2q_n_v_n_neg_noun_neg_si": "{} {} {} {} nie-{} który nie jest {}",
+          "2q_n_v_n_neg_noun_neg_pl": "{} {} {} {} nie-{} którzy nie są {}",
+          "2q_n_v_neg_n_noun_si": "{} {} nie {} {} {} który jest {}",
+          "2q_n_v_neg_n_noun_pl": "{} {} nie {} {} {} którzy są {}",
+          "2q_n_v_neg_n_noun_neg_si": "{} {} nie {} {} {} który nie jest {}",
+          "2q_n_v_neg_n_noun_neg_pl": "{} {} nie {} {} {} którzy nie są {}",
+          "2q_n_v_neg_n_neg_noun_si": "{} {} nie {} {} nie-{} który jest {}",
+          "2q_n_v_neg_n_neg_noun_pl": "{} {} nie {} {} nie-{} którzy są {}",
+          "2q_n_v_neg_n_neg_noun_neg_si": "{} {} nie {} {} nie-{} który nie jest {}",
+          "2q_n_v_neg_n_neg_noun_neg_pl": "{} {} nie {} {} nie-{} którzy nie są {}",
+          "2q_n_neg_v_n_noun_si": "{} nie-{} {} {} {} który jest {}",
+          "2q_n_neg_v_n_noun_pl": "{} nie-{} {} {} {} którzy są {}",
+          "2q_n_neg_v_n_noun_neg_si": "{} nie-{} {} {} {} który nie jest {}",
+          "2q_n_neg_v_n_noun_neg_pl": "{} nie-{} {} {} {} którzy nie są {}",
+          "2q_n_neg_v_n_neg_noun_si": "{} nie-{} {} {} nie-{} który jest {}",
+          "2q_n_neg_v_n_neg_noun_pl": "{} nie-{} {} {} nie-{} którzy są {}",
+          "2q_n_neg_v_n_neg_noun_neg_si": "{} nie-{} {} {} nie-{} który nie jest {}",
+          "2q_n_neg_v_n_neg_noun_neg_pl": "{} nie-{} {} {} nie-{} którzy nie są {}",
+          "2q_n_neg_v_neg_n_noun_si": "{} nie-{} nie {} {} {} który jest {}",
+          "2q_n_neg_v_neg_n_noun_pl": "{} nie-{} nie {} {} {} którzy są {}",
+          "2q_n_neg_v_neg_n_noun_neg_si": "{} nie-{} nie {} {} {} który nie jest {}",
+          "2q_n_neg_v_neg_n_noun_neg_pl": "{} nie-{} nie {} {} {} którzy nie są {}",
+          "2q_n_neg_v_neg_n_neg_noun_si": "{} nie-{} nie {} {} nie-{} który jest {}",
+          "2q_n_neg_v_neg_n_neg_noun_pl": "{} nie-{} nie {} {} nie-{} którzy są {}",
+          "2q_n_neg_v_neg_n_neg_noun_neg_si": "{} nie-{} nie {} {} nie-{} który nie jest {}",
+          "2q_n_neg_v_neg_n_neg_noun_neg_pl": "{} nie-{} nie {} {} nie-{} którzy nie są {}",
       }
 
       return templates[template_name]
@@ -426,9 +425,9 @@ class RelativeTVTemplates:
   def quantifier_det(self, quantifier):
     det = None
     if quantifier == "all":
-      det = random.choice(["all", "every"])
+      det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
-      det = random.choice(["some", "a"])
+      det = random.choice(["pewien", "jakiś"])
 
     return det
 
@@ -443,10 +442,9 @@ class RelativeTVTemplates:
 
       template_id += "v_"
       if negations[variables[3]] == True:
+        template_id += "neg_" # NAPRAWA
         if quantifiers[1] == "all":
-          dets[1] = "no"
-        else :
-          template_id += "neg_"
+          dets[1] = "żaden"
       
       template_id += "n_" 
       if negations[variables[1]] == True:
@@ -454,13 +452,22 @@ class RelativeTVTemplates:
       
       template_id += "noun_"
       if negations[variables[2]] == True:
-        if quantifiers[0] == "all" and dets[1] != "no":
-          dets[0] = "no"
-        else :
-          template_id += "neg_"
+        template_id += "neg_" # NAPRAWA
+        if quantifiers[0] == "all" and dets[1] != "żaden":
+          dets[0] = "żaden"
 
-      template_id += "pl" if dets[0] in ["all", "some"] else "si"
-      return self.template_natural_language(template_id,sub_obj_type).format(dets[0], variables[0], variables[3], dets[1], variables[1], variables[2])
+      template_id += "pl" if dets[0] in ["każdy", "pewien"] else "si"
+      
+      # ODMIANA DLA SUBJECT
+      subj = self.lexicon[variables[0]]["M"]
+      verb = self.lexicon[variables[3]]["si"]
+      if negations[variables[3]]:
+        obj = self.lexicon[variables[1]]["D"]
+      else:
+        obj = self.lexicon[variables[1]]["B"]
+      final_noun = self.lexicon[variables[2]]["N"]
+      
+      return self.template_natural_language(template_id,sub_obj_type).format(dets[0], subj, verb, dets[1], obj, final_noun)
           
     elif sub_obj_type == "object":
       template_id = "2q_n_"
@@ -470,15 +477,13 @@ class RelativeTVTemplates:
 
       template_id += "v_"
       if negations[variables[3]] == True:
+        template_id += "neg_" # NAPRAWA
         if quantifiers[0] == "all":
-          dets[0] = "no"
+          dets[0] = "żaden"
           if quantifiers[1] == "exists":
-            dets[1] = "every"
+            dets[1] = "każdy"
           else :
-            dets[1] = "any"
-        else :
-          template_id += "neg_"
-
+            dets[1] = "żaden"
       
       template_id += "n_" 
       if negations[variables[1]] == True:
@@ -488,8 +493,18 @@ class RelativeTVTemplates:
       if negations[variables[2]] == True:
         template_id += "neg_"
 
-      template_id += "pl" if dets[0] in ["all", "some"] else "si"
-      return self.template_natural_language(template_id, sub_obj_type).format(dets[0], variables[0], variables[3], dets[1], variables[1], variables[2])
+      template_id += "pl" if dets[0] in ["każdy", "pewien"] else "si"
+      
+      # ODMIANA DLA OBJECT
+      subj = self.lexicon[variables[0]]["M"]
+      verb = self.lexicon[variables[3]]["si"]
+      if negations[variables[3]]:
+        obj = self.lexicon[variables[1]]["D"]
+      else:
+        obj = self.lexicon[variables[1]]["B"]
+      final_noun = self.lexicon[variables[2]]["N"]
+      
+      return self.template_natural_language(template_id, sub_obj_type).format(dets[0], subj, verb, dets[1], obj, final_noun)
     
 
   def generate_logic_formula(self, quantifiers, predicates, negations, x, y, sub_obj_type = "subject"):
@@ -567,76 +582,77 @@ class RelativeTVTemplates:
     return logic, sentence, quantifiers
 
 class AnaphoraTemplates:
-  def __init__(self, functions):
+  def __init__(self, functions, lexicon):
     self.quantifiers = ["all", "exists"]
     self.functions = functions
+    self.lexicon = lexicon
 
   def template_natural_language(self, template_name):
     templates = {
-        "2q_n_v_n_v_si_si": "{} {} {} {} {} who {} {}",
-        "2q_n_v_n_v_si_pl": "{} {} {} {} {} who {} {}",
-        "2q_n_v_n_v_pl_si": "{} {} {} {} {} who {} {}",
-        "2q_n_v_n_v_pl_pl": "{} {} {} {} {} who {} {}",
-        "2q_n_v_n_v_neg_si_si": "{} {} {} {} {} who does not {} {}",
-        "2q_n_v_n_v_neg_si_pl": "{} {} {} {} {} who do not {} {}",
-        "2q_n_v_n_v_neg_pl_si": "{} {} {} {} {} who does not {} {}",
-        "2q_n_v_n_v_neg_pl_pl": "{} {} {} {} {} who do not {} {}",
-        "2q_n_v_neg_n_v_si_si": "{} {} does not {} {} {} who {} {}",
-        "2q_n_v_neg_n_v_pl_si": "{} {} do not {} {} {} who {} {}",
-        "2q_n_v_neg_n_v_si_pl": "{} {} does not {} {} {} who {} {}",
-        "2q_n_v_neg_n_v_pl_pl": "{} {} do not {} {} {} who {} {}",
-        "2q_n_v_neg_n_v_neg_si_si": "{} {} does not {} {} {} who does not {} {}",
-        "2q_n_v_neg_n_v_neg_si_pl": "{} {} does not {} {} {} who do not {} {}",
-        "2q_n_v_neg_n_v_neg_pl_si": "{} {} do not {} {} {} who does not {} {}",
-        "2q_n_v_neg_n_v_neg_pl_pl": "{} {} do not {} {} {} who do not {} {}",
-        "2q_n_v_n_neg_v_si_si": "{} {} {} {} non-{} who {} {}",
-        "2q_n_v_n_neg_v_si_pl": "{} {} {} {} non-{} who {} {}",
-        "2q_n_v_n_neg_v_pl_si": "{} {} {} {} non-{} who {} {}",
-        "2q_n_v_n_neg_v_pl_pl": "{} {} {} {} non-{} who {} {}",
-        "2q_n_v_n_neg_v_neg_si_si": "{} {} {} {} non-{} who does not {} {}",
-        "2q_n_v_n_neg_v_neg_si_pl": "{} {} {} {} non-{} who do not {} {}",
-        "2q_n_v_n_neg_v_neg_pl_si": "{} {} {} {} non-{} who does not {} {}",
-        "2q_n_v_n_neg_v_neg_pl_pl": "{} {} {} {} non-{} who do not {} {}",
-        "2q_n_v_neg_n_neg_v_si_si": "{} {} does not {} {} non-{} who {} {}",
-        "2q_n_v_neg_n_neg_v_pl_si": "{} {} do not {} {} non-{} who {} {}",
-        "2q_n_v_neg_n_neg_v_si_pl": "{} {} does not {} {} non-{} who {} {}",
-        "2q_n_v_neg_n_neg_v_pl_pl": "{} {} do not {} {} non-{} who {} {}",
-        "2q_n_v_neg_n_neg_v_neg_si_si": "{} {} does not {} {} non-{} who does not {} {}",
-        "2q_n_v_neg_n_neg_v_neg_si_pl": "{} {} does not {} {} non-{} who do not {} {}",
-        "2q_n_v_neg_n_neg_v_neg_pl_si": "{} {} do not {} {} non-{} who does not {} {}",
-        "2q_n_v_neg_n_neg_v_neg_pl_pl": "{} {} do not {} {} non-{} who do not {} {}",
-        "2q_n_neg_v_n_v_si_si": "{} non-{} {} {} {} who {} {}",
-        "2q_n_neg_v_n_v_si_pl": "{} non-{} {} {} {} who {} {}",
-        "2q_n_neg_v_n_v_pl_si": "{} non-{} {} {} {} who {} {}",
-        "2q_n_neg_v_n_v_pl_pl": "{} non-{} {} {} {} who {} {}",
-        "2q_n_neg_v_n_v_neg_si_si": "{} non-{} {} {} {} who does not {} {}",
-        "2q_n_neg_v_n_v_neg_si_pl": "{} non-{} {} {} {} who do not {} {}",
-        "2q_n_neg_v_n_v_neg_pl_si": "{} non-{} {} {} {} who does not {} {}",
-        "2q_n_neg_v_n_v_neg_pl_pl": "{} non-{} {} {} {} who do not {} {}",
-        "2q_n_neg_v_neg_n_v_si_si": "{} non-{} does not {} {} {} who {} {}",
-        "2q_n_neg_v_neg_n_v_si_pl": "{} non-{} does not {} {} {} who {} {}",
-        "2q_n_neg_v_neg_n_v_pl_si": "{} non-{} do not {} {} {} who {} {}",
-        "2q_n_neg_v_neg_n_v_pl_pl": "{} non-{} do not {} {} {} who {} {}",
-        "2q_n_neg_v_neg_n_v_neg_si_si": "{} non-{} does not {} {} {} who does not {} {}",
-        "2q_n_neg_v_neg_n_v_neg_si_pl": "{} non-{} does not {} {} {} who do not {} {}",
-        "2q_n_neg_v_neg_n_v_neg_pl_si": "{} non-{} do not {} {} {} who does not {} {}",
-        "2q_n_neg_v_neg_n_v_neg_pl_pl": "{} non-{} do not {} {} {} who do not {} {}",
-        "2q_n_neg_v_n_neg_v_si_si": "{} non-{} {} {} non-{} who {} {}",
-        "2q_n_neg_v_n_neg_v_si_pl": "{} non-{} {} {} non-{} who {} {}",
-        "2q_n_neg_v_n_neg_v_pl_si": "{} non-{} {} {} non-{} who {} {}",
-        "2q_n_neg_v_n_neg_v_pl_pl": "{} non-{} {} {} non-{} who {} {}",
-        "2q_n_neg_v_n_neg_v_neg_si_si": "{} non-{} {} {} non-{} who does not {} {}",
-        "2q_n_neg_v_n_neg_v_neg_si_pl": "{} non-{} {} {} non-{} who do not {} {}",
-        "2q_n_neg_v_n_neg_v_neg_pl_si": "{} non-{} {} {} non-{} who does not {} {}",
-        "2q_n_neg_v_n_neg_v_neg_pl_pl": "{} non-{} {} {} non-{} who do not {} {}",
-        "2q_n_neg_v_neg_n_neg_v_si_si": "{} non-{} does not {} {} non-{} who {} {}",
-        "2q_n_neg_v_neg_n_neg_v_si_pl": "{} non-{} does not {} {} non-{} who {} {}",
-        "2q_n_neg_v_neg_n_neg_v_pl_si": "{} non-{} do not {} {} non-{} who {} {}",
-        "2q_n_neg_v_neg_n_neg_v_pl_pl": "{} non-{} do not {} {} non-{} who {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_si_si": "{} non-{} does not {} {} non-{} who does not {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_si_pl": "{} non-{} does not {} {} non-{} who do not {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_pl_si": "{} non-{} do not {} {} non-{} who does not {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_pl_pl": "{} non-{} do not {} {} non-{} who do not {} {}"
+        "2q_n_v_n_v_si_si": "{} {} {} {} {} który {} {}",
+        "2q_n_v_n_v_si_pl": "{} {} {} {} {} którzy {} {}",
+        "2q_n_v_n_v_pl_si": "{} {} {} {} {} który {} {}",
+        "2q_n_v_n_v_pl_pl": "{} {} {} {} {} którzy {} {}",
+        "2q_n_v_n_v_neg_si_si": "{} {} {} {} {} który nie {} {}",
+        "2q_n_v_n_v_neg_si_pl": "{} {} {} {} {} którzy nie {} {}",
+        "2q_n_v_n_v_neg_pl_si": "{} {} {} {} {} który nie {} {}",
+        "2q_n_v_n_v_neg_pl_pl": "{} {} {} {} {} którzy nie {} {}",
+        "2q_n_v_neg_n_v_si_si": "{} {} nie {} {} {} który {} {}",
+        "2q_n_v_neg_n_v_pl_si": "{} {} nie {} {} {} który {} {}",
+        "2q_n_v_neg_n_v_si_pl": "{} {} nie {} {} {} którzy {} {}",
+        "2q_n_v_neg_n_v_pl_pl": "{} {} nie {} {} {} którzy {} {}",
+        "2q_n_v_neg_n_v_neg_si_si": "{} {} nie {} {} {} który nie {} {}",
+        "2q_n_v_neg_n_v_neg_si_pl": "{} {} nie {} {} {} którzy nie {} {}",
+        "2q_n_v_neg_n_v_neg_pl_si": "{} {} nie {} {} {} który nie {} {}",
+        "2q_n_v_neg_n_v_neg_pl_pl": "{} {} nie {} {} {} którzy nie {} {}",
+        "2q_n_v_n_neg_v_si_si": "{} {} {} {} nie-{} który {} {}",
+        "2q_n_v_n_neg_v_si_pl": "{} {} {} {} nie-{} którzy {} {}",
+        "2q_n_v_n_neg_v_pl_si": "{} {} {} {} nie-{} który {} {}",
+        "2q_n_v_n_neg_v_pl_pl": "{} {} {} {} nie-{} którzy {} {}",
+        "2q_n_v_n_neg_v_neg_si_si": "{} {} {} {} nie-{} który nie {} {}",
+        "2q_n_v_n_neg_v_neg_si_pl": "{} {} {} {} nie-{} którzy nie {} {}",
+        "2q_n_v_n_neg_v_neg_pl_si": "{} {} {} {} nie-{} który nie {} {}",
+        "2q_n_v_n_neg_v_neg_pl_pl": "{} {} {} {} nie-{} którzy nie {} {}",
+        "2q_n_v_neg_n_neg_v_si_si": "{} {} nie {} {} nie-{} który {} {}",
+        "2q_n_v_neg_n_neg_v_pl_si": "{} {} nie {} {} nie-{} który {} {}",
+        "2q_n_v_neg_n_neg_v_si_pl": "{} {} nie {} {} nie-{} którzy {} {}",
+        "2q_n_v_neg_n_neg_v_pl_pl": "{} {} nie {} {} nie-{} którzy {} {}",
+        "2q_n_v_neg_n_neg_v_neg_si_si": "{} {} nie {} {} nie-{} który nie {} {}",
+        "2q_n_v_neg_n_neg_v_neg_si_pl": "{} {} nie {} {} nie-{} którzy nie {} {}",
+        "2q_n_v_neg_n_neg_v_neg_pl_si": "{} {} nie {} {} nie-{} który nie {} {}",
+        "2q_n_v_neg_n_neg_v_neg_pl_pl": "{} nie-{} nie {} {} nie-{} którzy nie {} {}",
+        "2q_n_neg_v_n_v_si_si": "{} nie-{} {} {} {} który {} {}",
+        "2q_n_neg_v_n_v_si_pl": "{} nie-{} {} {} {} którzy {} {}",
+        "2q_n_neg_v_n_v_pl_si": "{} nie-{} {} {} {} który {} {}",
+        "2q_n_neg_v_n_v_pl_pl": "{} nie-{} {} {} {} którzy {} {}",
+        "2q_n_neg_v_n_v_neg_si_si": "{} nie-{} {} {} {} który nie {} {}",
+        "2q_n_neg_v_n_v_neg_si_pl": "{} nie-{} {} {} {} którzy nie {} {}",
+        "2q_n_neg_v_n_v_neg_pl_si": "{} nie-{} {} {} {} który nie {} {}",
+        "2q_n_neg_v_n_v_neg_pl_pl": "{} nie-{} {} {} {} którzy nie {} {}",
+        "2q_n_neg_v_neg_n_v_si_si": "{} nie-{} nie {} {} {} który {} {}",
+        "2q_n_neg_v_neg_n_v_si_pl": "{} nie-{} nie {} {} {} którzy {} {}",
+        "2q_n_neg_v_neg_n_v_pl_si": "{} nie-{} nie {} {} {} który {} {}",
+        "2q_n_neg_v_neg_n_v_pl_pl": "{} nie-{} nie {} {} {} którzy {} {}",
+        "2q_n_neg_v_neg_n_v_neg_si_si": "{} nie-{} nie {} {} {} który nie {} {}",
+        "2q_n_neg_v_neg_n_v_neg_si_pl": "{} nie-{} nie {} {} {} którzy nie {} {}",
+        "2q_n_neg_v_neg_n_v_neg_pl_si": "{} nie-{} nie {} {} {} który nie {} {}",
+        "2q_n_neg_v_neg_n_v_neg_pl_pl": "{} nie-{} nie {} {} {} którzy nie {} {}",
+        "2q_n_neg_v_n_neg_v_si_si": "{} nie-{} {} {} nie-{} który {} {}",
+        "2q_n_neg_v_n_neg_v_si_pl": "{} nie-{} {} {} nie-{} którzy {} {}",
+        "2q_n_neg_v_n_neg_v_pl_si": "{} nie-{} {} {} nie-{} który {} {}",
+        "2q_n_neg_v_n_neg_v_pl_pl": "{} nie-{} {} {} nie-{} którzy {} {}",
+        "2q_n_neg_v_n_neg_v_neg_si_si": "{} nie-{} {} {} nie-{} który nie {} {}",
+        "2q_n_neg_v_n_neg_v_neg_si_pl": "{} nie-{} {} {} nie-{} którzy nie {} {}",
+        "2q_n_neg_v_n_neg_v_neg_pl_si": "{} nie-{} {} {} nie-{} który nie {} {}",
+        "2q_n_neg_v_n_neg_v_neg_pl_pl": "{} nie-{} {} {} nie-{} którzy nie {} {}",
+        "2q_n_neg_v_neg_n_neg_v_si_si": "{} nie-{} nie {} {} nie-{} który {} {}",
+        "2q_n_neg_v_neg_n_neg_v_si_pl": "{} nie-{} nie {} {} nie-{} którzy {} {}",
+        "2q_n_neg_v_neg_n_neg_v_pl_si": "{} nie-{} nie {} {} nie-{} który {} {}",
+        "2q_n_neg_v_neg_n_neg_v_pl_pl": "{} nie-{} nie {} {} nie-{} którzy {} {}",
+        "2q_n_neg_v_neg_n_neg_v_neg_si_si": "{} nie-{} nie {} {} nie-{} który nie {} {}",
+        "2q_n_neg_v_neg_n_neg_v_neg_si_pl": "{} nie-{} nie {} {} nie-{} którzy nie {} {}",
+        "2q_n_neg_v_neg_n_neg_v_neg_pl_si": "{} nie-{} nie {} {} nie-{} który nie {} {}",
+        "2q_n_neg_v_neg_n_neg_v_neg_pl_pl": "{} nie-{} nie {} {} nie-{} którzy nie {} {}"
       }
 
     return templates[template_name]
@@ -644,9 +660,9 @@ class AnaphoraTemplates:
   def quantifier_det(self, quantifier):
     det = None
     if quantifier == "all":
-      det = random.choice(["all", "every"])
+      det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
-      det = random.choice(["some", "a"])
+      det = random.choice(["pewien", "jakiś"])
 
     return det
 
@@ -659,16 +675,16 @@ class AnaphoraTemplates:
       template_id += "neg_"
     template_id += "v_"
     if negations[variables[3]] == True:
+      template_id += "neg_" # NAPRAWA
       if quantifiers[0] == "all":
-        dets[0] = "no"
+        dets[0] = "żaden"
         if quantifiers[1] == "all":
-          dets[1] = "any"
+          dets[1] = "żaden"
         else :
-          dets[1] = "every"
+          dets[1] = "każdy"
       elif (quantifiers[0] == "exists") and (quantifiers[1] == "exists"):
-        dets[1] = "no"
-      else :
-        template_id += "neg_"
+        dets[1] = "żaden"
+      
     template_id += "n_"
     if negations[variables[1]] == True:
       template_id += "neg_"
@@ -676,20 +692,30 @@ class AnaphoraTemplates:
     if negations[variables[2]] == True:
       template_id += "neg_"
     
-    if dets[0] in ["all", "some"]:
+    if dets[0] in ["każdy", "pewien"]:
       template_id += "pl_"
-      pronoun = "them"
+      pronoun = "ich"
     else :
       template_id += "si_"
-      pronoun = random.choice(["him", "her"])
+      pronoun = random.choice(["go", "go"])
     
-    if dets[1] in ["all", "some"]:
+    if dets[1] in ["każdy", "pewien"]:
       template_id += "pl"
     else :
       template_id += "si"
 
+    # ODMIANA DLA ANAPHORY
+    subj = self.lexicon[variables[0]]["M"]
+    verb1 = self.lexicon[variables[3]]["si"]
+    
+    if negations[variables[3]]:
+      obj = self.lexicon[variables[1]]["D"]
+    else:
+      obj = self.lexicon[variables[1]]["B"]
+      
+    verb2 = self.lexicon[variables[2]]["si"]
 
-    return self.template_natural_language(template_id).format(dets[0], variables[0], variables[3], dets[1], variables[1], variables[2], pronoun)
+    return self.template_natural_language(template_id).format(dets[0], subj, verb1, dets[1], obj, verb2, pronoun)
 
     
 
@@ -748,6 +774,3 @@ class AnaphoraTemplates:
     sentence = self.natural_language_sentence_generation(quantifiers, variables, negations)
 
     return logic, sentence, quantifiers
-    
-
-    
