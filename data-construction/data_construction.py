@@ -18,12 +18,13 @@ from nltk.corpus import brown
 from scipy.stats import beta
 from numpy import histogram
 
+from typing import List, Dict, Any, Union, Optional
+import io
 
 import random
 import re
 import time
 
-import numpy as np
 import pandas as pd
 
 from nltk.parse.generate import generate
@@ -35,74 +36,102 @@ from fragments import (
   AnaphoraTemplates,
 )
 
-
 from tqdm import tqdm
 
-
 nouns = [
-    "actor","artist","butler","crook","director",
-    "expert","fisherman","judge","juror","painter","musician",
-    "policeman","fireman","professor","sheriff","soldier","student",
-    "philosopher","teacher","tourist","lawyer","physician","engineer",
-    "veterinarian","dentist","accountant","technician","electrician",
-    "psychologist","physicist","plumber","waiter","mechanic","cook",
-    "librarian","hairdresser","economist","bartender","cashier","surgeon",
-    "pilot","butcher","optician","athlete","cleaner",
-    "actuary","sailor","therapist","secret_agent","animal_breeder","air_traffic_controller",
-    "athropologist","animal_trainer","allergist","real_estate_agent","archeologist",
-    "astronomer","athletic_trainer","audiologist","auditor","bailiff",
-    "baker","barber","clerk","cartographer","chiropractor","dancer","epidemiologist",
-    "farmer","floral_designer","forester","truck_driver","jeweler","interior_designer",
-    "machinist","mathematician","secretary","photographer","radio_announcer","roofer",
-    "paver","taxi_driver","historian","poet","stunt_performer","monologist","publisher",
-    "scribe","blogger","copy_editor","ceo","ticket_controller","station_master","surveyor",
-    "driller", "scholar", "quant", "cfo" , "cto", "cio", "computer_scientist", "prisoner", 
-    "guest", "visitor", "helper", "breadwinner", "host", "ghost", "playmaker", "scorer", 
-    "settler", "reacher", "cynic", "witch", "captain", "buisness_analyst", "data_scientist",
-    "trader", "principal", "ballerina", "footballer", "cricketer", "tennis_player", "lecturer", 
-    "patient", "ai_scientist", "philosopher", "cyclist", "chess_player", "stratergist", 
-    "scientist", "parent", "fbi_agent", "defender" , "attacker", "warlord", "nlp_engineer", 
-    "grandmaster", "master", "king", "queen", "knight", "prince", "princess", "baby", "adult",
-    "advisor", "wrestler", "fighter", "boxer", "bee_keeper", "musian", "dj_artist", "violinist",
-    "conductor", "gymnast"
+    "aktor", "artysta", "kamerdyner", "oszust", "dyrektor",
+    "ekspert", "rybak", "sędzia", "przysięgły", "malarz", "muzyk",
+    "policjant", "strażak", "profesor", "szeryf", "żołnierz", "student",
+    "filozof", "nauczyciel", "turysta", "prawnik", "lekarz", "inżynier",
+    "weterynarz", "dentysta", "księgowy", "technik", "elektryk",
+    "psycholog", "fizyk", "hydraulik", "kelner", "mechanik", "kucharz",
+    "bibliotekarz", "fryzjer", "ekonomista", "barman", "kasjer", "chirurg",
+    "pilot", "rzeźnik", "optyk", "sportowiec", "sprzątacz",
+    "aktuariusz", "żeglarz", "terapeuta", "tajny_agent", "hodowca_zwierząt", "kontroler_ruchu_lotniczego",
+    "antropolog", "treser_zwierząt", "alergolog", "agent_nieruchomości", "archeolog",
+    "astronom", "trener_atletyczny", "audiolog", "audytor", "woźny_sądowy",
+    "piekarz", "fryzjer_męski", "urzędnik", "kartograf", "kręgarz", "tancerz", "epidemiolog",
+    "rolnik", "florysta", "leśniczy", "kierowca_ciężarówki", "jubiler", "projektant_wnętrz",
+    "maszynista", "matematyk", "sekretarz", "fotograf", "spiker_radiowy", "dekarz",
+    "brukarz", "taksówkarz", "historyk", "poeta", "kaskader", "monologista", "wydawca",
+    "skryba", "bloger", "redaktor", "prezes", "kontroler_biletów", "zawiadowca_stacji", "geodeta",
+    "wiertacz", "uczony", "analityk_ilościowy", "dyrektor_finansowy", "dyrektor_techniczny", "dyrektor_it", "informatyk", "więzień",
+    "gość", "odwiedzający", "pomocnik", "żywiciel", "gospodarz", "duch", "rozgrywający", "strzelec",
+    "osadnik", "zdobywca", "cynik", "wiedźma", "kapitan", "analityk_biznesowy", "naukowiec_danych",
+    "handlowiec", "dyrektor_szkoły", "baletnica", "piłkarz", "krykiecista", "tenisista", "wykładowca",
+    "pacjent", "naukowiec_ai", "rowerzysta", "szachista", "strateg",
+    "naukowiec", "rodzic", "agent_fbi", "obrońca", "napastnik", "watażka", "inżynier_nlp",
+    "arcymistrz", "mistrz", "król", "królowa", "rycerz", "książę", "księżniczka", "niemowlę", "dorosły",
+    "doradca", "zapaśnik", "wojownik", "bokser", "pszczelarz", "dj", "skrzypek",
+    "dyrygent", "gimnastyk"
 ]
 
 count_furniture = [
-    "chair","table","desk","stool","couch","bookcase",
-    "bed","mattress","dresser","futon","nightstand","storage_container",
-    "hammock","billiard_table","piano","chess_board","door",
+    "krzesło", "stół", "biurko", "taboret", "kanapa", "regał",
+    "łóżko", "materac", "komoda", "futon", "stolik_nocny", "pojemnik_do_przechowywania",
+    "hamak", "stół_bilardowy", "pianino", "szachownica", "drzwi"
 ]
-
 
 count_animals = [
-    "aardvark","dog","alpaca","armadillo","anteater","penguin",
-    "ant","bear","bonobo","beaver","bird","owl","butterfly",
-    "buffalo","bumblebee","frog","whale","bison","badger","baboon",
-    "rhinoceros","camel","cat","chicken","cheetah","cockatoo","cow","crab",
-    "catepillar","chimpanzee","loon","spider","crocodile","coyote","chincilla",
-    "duck","deer","dolphin","dingo","donkey","eel","elephant","emu","gorilla","falcon",
-    "fox","ferret","gerbil","grasshopper","gopher","goat","hyena","horse","hippopotamus",
-    "jaguar","kangaroo","lemur","lion","lynx","lizard","marmot","mink","muskrat","mouse",
-    "macaw","moose","newt","ostrich","otter","pig","puffin","puma","pelican","peacock",
-    "rabbit","snake","reindeer","raccoon","rat","sheep","vulture","wombat","wolf","warthog",
-    "walrus","weasel","boar","zebra","seal",
+    "mrówkojad_afrykański", "pies", "alpaka", "pancernik", "mrówkojad", "pingwin",
+    "mrówka", "niedźwiedź", "bonobo", "bóbr", "ptak", "sowa", "motyl",
+    "bawół", "trzmiel", "żaba", "wieloryb", "bizon", "borsuk", "pawian",
+    "nosorożec", "wielbłąd", "kot", "kurczak", "gepard", "kakadu", "krowa", "krab",
+    "gąsienica", "szympans", "nur", "pająk", "krokodyl", "kojot", "szynszyla",
+    "kaczka", "jeleń", "delfin", "dingo", "osioł", "węgorz", "słoń", "emu", "goryl", "sokół",
+    "lis", "fretka", "gerbil", "pasikonik", "suseł", "koza", "hiena", "koń", "hipopotam",
+    "jaguar", "kangur", "lemur", "lew", "ryś", "jaszczurka", "świstak", "norka", "piżmak", "mysz",
+    "ara", "łoś", "traszka", "struś", "wydra", "świnia", "maskonur", "puma", "pelikan", "paw",
+    "królik", "wąż", "renifer", "szop", "szczur", "owca", "sęp", "wombat", "wilk", "guziec",
+    "mors", "łasica", "dzik", "zebra", "foka"
 ]
 
-verbs = ["like", "admire", "make", "break", "employ",
-         "hit", "kill", "fight", "touch", "slay",
-         "approve", "defend", "replace", "chase", "hunt",
-         "dislike", "recognize", "understand", "feel",
-         "love", "hate", "impress", "know", "notice", "perceive", 
-         "see", "remember", "surprise", "prefer",
-         "draw", "accuse", "adore", "advise", "appreciate", 
-         "approach", "astonish", "need", "call", "believe",
-         "follow", "serve", "consult", "convince", "criticize", 
-         "desire", "doubt", "encourage", "examine",
-         "feed", "forgive", "hug", "investigate", "kiss", 
-         "mention", "owe", "persuade", "propose", "promise",
-         "punch", "shoot", "threaten", "tolerate", "warn", 
-         "esteem", "marvel", "fancy", "utilize", "slaughter",
-         "endorse", "support"]
+verbs = [
+    "lubić", "podziwiać", "robić", "psuć", "zatrudniać",
+    "uderzać", "zabijać", "walczyć", "dotykać", "zgładzić",
+    "aprobować", "bronić", "zastępować", "gonić", "polować",
+    "nie_lubić", "rozpoznawać", "rozumieć", "czuć",
+    "kochać", "nienawidzić", "imponować", "wiedzieć", "zauważać", "dostrzegać",
+    "widzieć", "pamiętać", "zaskakiwać", "woleć",
+    "rysować", "oskarżać", "uwielbiać", "doradzać", "doceniać",
+    "podchodzić", "zadziwiać", "potrzebować", "wołać", "wierzyć",
+    "naśladować", "służyć", "konsultować", "przekonywać", "krytykować",
+    "pragnąć", "wątpić", "zachęcać", "badać",
+    "karmić", "wybaczać", "przytulać", "prowadzić_dochodzenie", "całować",
+    "wspominać", "wisieć_dłużnym", "namawiać", "proponować", "obiecywać",
+    "uderzyć_pięścią", "strzelać", "grozić", "tolerować", "ostrzegać",
+    "szanować", "podziwiać_z_zachwytem", "fantazjować", "użytkować", "mordować",
+    "wspierać"
+]
+
+# =========================================================================
+# SYSTEM LEKSYKALNY (SŁOWNIK)
+# =========================================================================
+
+# 1. Automatyczne wypełnienie słownika formami mianownika (zapobiega błędom KeyError)
+lexicon = {word: {"M": word, "N": word, "B": word, "D": word} for word in nouns + count_furniture + count_animals}
+verbs_lexicon = {verb: {"si": verb, "pl": verb} for verb in verbs}
+lexicon.update(verbs_lexicon)
+
+# 2. Ręczne nadpisywanie poprawnymi formami polskimi.
+# TODO: Docelowo musisz tutaj wpisać odmianę dla wszystkich swoich słów!
+lexicon.update({
+    # RZECZOWNIKI (M: Mianownik, N: Narzędnik, B: Biernik, D: Dopełniacz)
+    "aktor": {"M": "aktor", "N": "aktorem", "B": "aktora", "D": "aktora"},
+    "artysta": {"M": "artysta", "N": "artystą", "B": "artystę", "D": "artysty"},
+    "kamerdyner": {"M": "kamerdyner", "N": "kamerdynerem", "B": "kamerdynera", "D": "kamerdynera"},
+    "oszust": {"M": "oszust", "N": "oszustem", "B": "oszusta", "D": "oszusta"},
+    "dyrektor": {"M": "dyrektor", "N": "dyrektorem", "B": "dyrektora", "D": "dyrektora"},
+    "strażak": {"M": "strażak", "N": "strażakiem", "B": "strażaka", "D": "strażaka"},
+    "optyk": {"M": "optyk", "N": "optykiem", "B": "optyka", "D": "optyka"},
+    
+    # CZASOWNIKI (si: 3 os. l. pojedynczej, pl: 3 os. l. mnogiej)
+    "lubić": {"si": "lubi", "pl": "lubią"},
+    "podziwiać": {"si": "podziwia", "pl": "podziwiają"},
+    "robić": {"si": "robi", "pl": "robią"},
+    "nie_lubić": {"si": "nie lubi", "pl": "nie lubią"},
+})
+# =========================================================================
 
 
 def parse_args():
@@ -200,14 +229,15 @@ def parse_args():
 
 class LangaugeFragmentSAT:
 
+  def __init__(self, functions, lexicon, language_fragment, df_hard, min_a = 3, max_a = 8, min_b = 3, max_b = 8, timeout = 10000, prob = 0.5, a_b = 2):
 
-  def __init__(self, functions, language_fragment, df_hard, min_a = 3, max_a = 8, min_b = 3, max_b = 8, timeout = 10000, prob = 0.5, a_b = 2):
-
-    self.syl_templates = SyllogisticTemplates(functions)
-    self.relsyl_templates = RelationalSyllogiticTemplates(functions)
-    self.relative_templates = RelativeClausesTemplates(functions)
-    self.relative_tv_templates = RelativeTVTemplates(functions)
-    self.anaphora_templates = AnaphoraTemplates(functions)
+    # PRZEKAZANIE LEKSYKONU DO SZABLONÓW
+    self.syl_templates = SyllogisticTemplates(functions, lexicon)
+    self.relsyl_templates = RelationalSyllogiticTemplates(functions, lexicon)
+    self.relative_templates = RelativeClausesTemplates(functions, lexicon)
+    self.relative_tv_templates = RelativeTVTemplates(functions, lexicon)
+    self.anaphora_templates = AnaphoraTemplates(functions, lexicon)
+    
     self.langauge_fragment = language_fragment
     self.timeout = timeout
     self.df_hard = df_hard
@@ -228,7 +258,6 @@ class LangaugeFragmentSAT:
     list_sentences = []
     list_quantifiers = []
 
-
     unary_preds = random.sample(nouns, unary)
     binary_preds = random.sample(verbs, binary)
     prob = 1
@@ -245,8 +274,6 @@ class LangaugeFragmentSAT:
     sat = str(s.check())
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
-
-  
 
   def generate_relative_clauses(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
 
@@ -278,7 +305,6 @@ class LangaugeFragmentSAT:
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  
   def generate_relational_syllogistic(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
 
     s = Solver()
@@ -313,7 +339,6 @@ class LangaugeFragmentSAT:
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  
   def generate_relative_tv(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
 
     s = Solver()
@@ -321,7 +346,6 @@ class LangaugeFragmentSAT:
     list_fol = []
     list_sentences = []
     list_quantifiers = []
-
 
     unary_preds = random.sample(nouns, unary)
     binary_preds = random.sample(verbs, binary)
@@ -355,7 +379,6 @@ class LangaugeFragmentSAT:
     list_fol = []
     list_sentences = []
     list_quantifiers = []
-
 
     unary_preds = random.sample(nouns, unary)
     binary_preds = random.sample(verbs, binary)
@@ -402,12 +425,10 @@ class LangaugeFragmentSAT:
       time.sleep(0.01)
       return self.generate_anaphora(nouns, verbs, x, y, unary, binary, num_clauses)
 
-
   def generator(self):
     while True:
       yield
 
- 
   def create_df(self, nouns, verbs, x, y, num_datapoints=10000):
 
     data = {
@@ -428,7 +449,6 @@ class LangaugeFragmentSAT:
 
     while (True):
 
-      
       if (self.langauge_fragment == "syllogistic") or (self.langauge_fragment == "relative clauses") or ((self.langauge_fragment == "syllogistic minus")):
 
         sample = self.min_a + self.dist.rvs(size=1) * (self.max_a - self.min_a)
@@ -465,16 +485,15 @@ class LangaugeFragmentSAT:
 
         progress_bar.update(1)
                   
-      
       if count >= num_datapoints :
         break
 
       if iter % 1000 == 0 :
         print(iter, count)
 
-
     df = pd.DataFrame(data)
     return df
+
 
 def main():
 
@@ -483,13 +502,11 @@ def main():
     set_param(proof=True)
 
     ctx = Context()
-    #s = Solver()
 
     Z = IntSort()
     B = BoolSort()
 
     x, y = Ints('x y')
-
 
     functions = {}
     for f in nouns :
@@ -501,7 +518,9 @@ def main():
     df_agg = pd.read_csv(args.sampling_file)
     df_hard = df_agg[(df_agg['is_sat'] < args.max_ab) & (df_agg['is_sat'] > args.min_ab)]
 
+    # PRZEKAZANIE LEKSYKONU DO KLASY ZARZĄDZAJĄCEJ
     satFragment = LangaugeFragmentSAT(functions,
+                                       lexicon,  # <--- ZMIANA
                                        args.fragment, 
                                        df_hard, 
                                        min_a = args.min_a, 
@@ -512,12 +531,7 @@ def main():
                                        prob = args.prob)
     df = satFragment.create_df(nouns, verbs, x, y, num_datapoints=args.num_datapoints)
 
-
     df.to_csv(args.output_file, index = False)
-
-
-
 
 if __name__ == "__main__":
     main()
-
