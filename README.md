@@ -11,6 +11,27 @@ The problem instances of satisfiability in natural language can belong to differ
 * **Double Negation Handling:** The templates and logic translation have been entirely rewritten to support native Polish double negation structures (e.g., translating "No X is Y" to the grammatically correct "Żaden X **nie** jest Y") without breaking the underlying Z3 solver logic.
 * **Accurate Agreement:** Proper morphological agreement between quantifiers, nouns, and verbs depending on the sentence context (singular/plural, affirmative/negative).
 
+### Run program
+
+1. Clone repo: 
+```bash
+git clone 
+```
+
+2. Install dependencies:
+```bash
+pip install -e .
+```
+
+3. Run program:
+```bash
+nl-sat-gen --fragment "syllogistic" --sampling_file "sampling.csv" --num_datapoints 10 
+```
+or
+```bash
+python data_construction.py --fragment "syllogistic" --sampling_file "sampling.csv" --num_datapoints 10
+```
+
 ### Data Construction
 
 We construct data by sampling from the `phase-change region` (the region around which the probability of satisfiability is around 0.5). The updated pipeline dynamically inflects the Polish vocabulary during this generation process. Refer to the visualization of how the probability of satisfiability varies with the number of unary and binary predicates in the original study.
