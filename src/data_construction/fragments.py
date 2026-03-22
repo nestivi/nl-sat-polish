@@ -45,7 +45,7 @@ class SyllogisticTemplates:
 
     if negations[variables[0]] == True:
       template_id += "neg_"
-      
+
     template_id += "si"
     
     if negations[variables[1]] == True:
@@ -159,17 +159,25 @@ class RelationalSyllogiticTemplates :
 
     # ODMIANA SŁÓW:
     subj = self.lexicon[variables[0]]["M"] # Podmiot
+    verb = self.lexicon[variables[2]]["si"] # Czasownik
     
-    # Czasownik (zakładamy liczbę pojedynczą, bo dets[0] to "każdy", "pewien" lub "żaden")
-    verb = self.lexicon[variables[2]]["si"] 
+    # Odmiana kwantyfikatora obiektu (dets[1])
+    det_obj = dets[1]
+    if det_obj == "każdy":
+        det_obj = "każdego"
+    elif det_obj == "żaden":
+        det_obj = "żadnego"
+    elif det_obj in ["pewien", "jakiś"]:
+        det_obj = "pewnego"
     
-    # Obiekt (jeśli czasownik zanegowany -> Dopełniacz, jeśli twierdzący -> Biernik)
+    # Obiekt 
     if negations[variables[2]] == True:
         obj = self.lexicon[variables[1]]["D"]
     else:
         obj = self.lexicon[variables[1]]["B"]
       
-    sentence = self.template_natural_language(template_id).format(dets[0], subj, verb, dets[1], obj)
+    # UWAGA: Używamy det_obj zamiast dets[1]
+    sentence = self.template_natural_language(template_id).format(dets[0], subj, verb, det_obj, obj)
 
     if dets[0] in ["pewien", "każdy"]:
       return sentence.replace(" nie ", " nie ")
@@ -290,10 +298,7 @@ class RelativeClausesTemplates:
       if quantifier == "all":
         det = "żaden"
 
-    if sing == "pl":
-      template_id += "pl"
-    else :
-      template_id += "si"
+    template_id += "si"
 
     # ODMIANA:
     subj = self.lexicon[variables[0]]["M"]
@@ -678,7 +683,7 @@ class AnaphoraTemplates:
       template_id += "neg_"
     template_id += "v_"
     if negations[variables[3]] == True:
-      template_id += "neg_" # NAPRAWA
+      template_id += "neg_"
       if quantifiers[0] == "all":
         dets[0] = "żaden"
         if quantifiers[1] == "all":
