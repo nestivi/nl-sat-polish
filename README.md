@@ -36,7 +36,7 @@ python data_construction.py \
 
 ### Acknowledgments & Credits
 
-The core logical framework, data sampling methodology, and baseline code utilized in this project were originally developed by iTharindu. 
+The core logical framework, data sampling methodology, and baseline code utilized in this project were originally developed by @iTharindu. 
 
 This repository builds upon their foundational work by introducing a rigorous linguistic adaptation for the Polish language. We highly encourage exploring their original paper and repository: 
 https://github.com/iTharindu/nl-sat.git
