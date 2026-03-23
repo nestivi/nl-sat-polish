@@ -27,12 +27,10 @@ class SyllogisticTemplates:
         "neg_si_neg": "{} nie-{} nie jest {}",
         "neg_pl_neg": "{} nie-{} nie są {}", 
     }
-
     return templates[template_name]
 
   def natural_language_sentence_generation(self, quantifier, variables, negations):
     det = None
-
     if quantifier == "all":
       if negations[variables[1]] == True :
         det = "żaden"
@@ -42,7 +40,6 @@ class SyllogisticTemplates:
       det = random.choice(["pewien", "jakiś"])
 
     template_id = ""
-
     if negations[variables[0]] == True:
       template_id += "neg_"
 
@@ -57,7 +54,6 @@ class SyllogisticTemplates:
     return self.template_natural_language(template_id).format(det, subj, obj)
 
   def generate_logic_formula(self, quantifier, predicates, negations, x, y):
-
     pred_func = {}
     for f in predicates :
       if negations[f] :
@@ -65,29 +61,22 @@ class SyllogisticTemplates:
       else :
         pred_func[f] = self.functions[f](x)
 
-
     if quantifier == "all":
       fol = ForAll(x, Implies(pred_func[predicates[0]], pred_func[predicates[1]]))
     else :
       fol = Exists(x, And(pred_func[predicates[0]], pred_func[predicates[1]]))
-
     return fol
 
-
   def generate_sentence_logic_pair(self, nouns, verbs, x, y, negations = True):
-
     variables = random.sample(nouns, 2)
-
     if negations == True :
       negations = {variables[0] : random.choice([True, False]), 
                   variables[1] : random.choice([True, False])}
-
     else :
       negations = {variables[0] : False,
                    variables[1] : False}
     
     quantifier = random.choice(self.quantifiers)
-
     logic, sentence = None, None
 
     try:
@@ -96,7 +85,6 @@ class SyllogisticTemplates:
     except :
       print(nouns, verbs, negations)
     return logic, sentence, quantifier
-
 
 
 class RelationalSyllogiticTemplates : 
@@ -117,7 +105,6 @@ class RelationalSyllogiticTemplates :
         "neg_noun_neg_verb_noun": "{} nie-{} nie {} {} {}",
         "neg_noun_neg_verb_neg_noun": "{} nie-{} nie {} {} nie-{}",
     }
-    
     return templates[template_name]
 
   def quantifier_det(self, quantifier):
@@ -126,21 +113,17 @@ class RelationalSyllogiticTemplates :
       det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
       det = random.choice(["pewien", "jakiś"])
-
     return det
-
 
   def natural_language_sentence_generation(self, quantifiers, variables, negations):
     dets = [self.quantifier_det(quantifiers[0]), self.quantifier_det(quantifiers[1])]
 
     template_id = ""
-
     if negations[variables[0]] == True:
       template_id += "neg_"
     template_id += "noun_"
 
     if negations[variables[2]] == True :
-      # NAPRAWA LOGIKI PRZECZEŃ: zawsze dodajemy "neg_" gdy czasownik jest zanegowany
       template_id += "neg_"
       if quantifiers[0] == "all":
         dets[0] = "żaden"
@@ -152,7 +135,6 @@ class RelationalSyllogiticTemplates :
         dets[1] = "żaden"
       
     template_id += "verb_"
-
     if negations[variables[1]] == True:
       template_id += "neg_"
     template_id += "noun"
@@ -169,6 +151,9 @@ class RelationalSyllogiticTemplates :
         det_obj = "żadnego"
     elif det_obj in ["pewien", "jakiś"]:
         det_obj = "pewnego"
+        
+    if dets[0] == "żaden" and negations[variables[2]]:
+        det_obj = "żadnego"
     
     # Obiekt 
     if negations[variables[2]] == True:
@@ -176,7 +161,6 @@ class RelationalSyllogiticTemplates :
     else:
         obj = self.lexicon[variables[1]]["B"]
       
-    # UWAGA: Używamy det_obj zamiast dets[1]
     sentence = self.template_natural_language(template_id).format(dets[0], subj, verb, det_obj, obj)
 
     if dets[0] in ["pewien", "każdy"]:
@@ -184,7 +168,6 @@ class RelationalSyllogiticTemplates :
     return sentence
 
   def generate_logic_formula(self, quantifiers, predicates, negations, x, y):
-
     pred_func = {}
 
     if negations[predicates[0]] :
@@ -213,9 +196,7 @@ class RelationalSyllogiticTemplates :
 
     return fol
 
-
   def generate_sentence_logic_pair(self, nouns, verbs, x, y):
-
     binary = random.choice(verbs)
     unary = random.sample(nouns, 2)
     quantifiers = [random.choice(["all", "exists"]), random.choice(["all", "exists"])]
@@ -227,7 +208,6 @@ class RelationalSyllogiticTemplates :
     variables.append(binary)
 
     logic, sentence = None, None
-
     try:
       logic = self.generate_logic_formula(quantifiers, variables, negations, x, y)
       sentence = self.natural_language_sentence_generation(quantifiers, variables, negations)
@@ -262,7 +242,6 @@ class RelativeClausesTemplates:
       "neg_noun_neg_noun_neg_si": "{} nie-{} który nie jest {} nie jest {}",
       "neg_noun_neg_noun_neg_pl": "{} nie-{} którzy nie są {} nie są {}",
     }
-
     return templates[template_name]
 
   def quantifier_det(self, quantifier):
@@ -271,30 +250,21 @@ class RelativeClausesTemplates:
       det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
       det = random.choice(["pewien", "jakiś"])
-
     return det
 
   def natural_language_sentence_generation(self, quantifier, variables, negations):
-
     det = self.quantifier_det(quantifier)
-
-    negs = [negations[variables[0]], negations[variables[1]],negations[variables[2]]]
-    sing = "pl" if det in ["każdy", "pewien"] else "si"
-
     template_id = ""
     if negations[variables[0]] == True :
       template_id += "neg_"
-
     template_id += "noun_"
 
     if negations[variables[1]] == True :
       template_id += "neg_"
-
     template_id += "noun_"
 
-
     if negations[variables[2]] == True :
-      template_id += "neg_" # NAPRAWA: Dodanie negacji zawsze
+      template_id += "neg_"
       if quantifier == "all":
         det = "żaden"
 
@@ -308,7 +278,6 @@ class RelativeClausesTemplates:
     return self.template_natural_language(template_id).format(det, subj, obj1, obj2)
 
   def generate_logic_formula(self, quantifier, predicates, negations, x, y):
-
     pred_func = {}
     for f in predicates :
       if negations[f] :
@@ -316,34 +285,25 @@ class RelativeClausesTemplates:
       else :
         pred_func[f] = self.functions[f](x)
 
-
     if quantifier == "all":
       fol = ForAll(x, Implies(And(pred_func[predicates[0]], pred_func[predicates[1]]), pred_func[predicates[2]]))
     else :
       fol = Exists(x, And(pred_func[predicates[0]], pred_func[predicates[1]], pred_func[predicates[2]]))
-
     return fol
 
-
   def generate_sentence_logic_pair(self, nouns, verbs, x, y):
-
-
     variables = random.sample(nouns, 3)
-    
     negations = {variables[0] : random.choice([True, False]), 
                  variables[1] : random.choice([True, False]),
                  variables[2] : random.choice([True, False])}
-
     
     quantifier = random.choice(self.quantifiers)
-    
     logic, sentence = None, None
     try : 
       logic = self.generate_logic_formula(quantifier, variables, negations, x, y)
       sentence = self.natural_language_sentence_generation(quantifier, variables, negations)
     except :
       print(nouns, verbs, negations)
-
     return logic, sentence, quantifier
 
 
@@ -389,7 +349,6 @@ class RelativeTVTemplates:
           "2q_n_neg_v_neg_n_neg_noun_neg_si": "{} nie-{} który nie {} {} nie-{} nie jest {}",
           "2q_n_neg_v_neg_n_neg_noun_neg_pl": "{} nie-{} którzy nie {} {} nie-{} nie są {}",
       }
-
       return templates[template_name]
 
     if sub_obj_type == "object":
@@ -427,7 +386,6 @@ class RelativeTVTemplates:
           "2q_n_neg_v_neg_n_neg_noun_neg_si": "{} nie-{} nie {} {} nie-{} który nie jest {}",
           "2q_n_neg_v_neg_n_neg_noun_neg_pl": "{} nie-{} nie {} {} nie-{} którzy nie są {}",
       }
-
       return templates[template_name]
 
   def quantifier_det(self, quantifier):
@@ -436,87 +394,112 @@ class RelativeTVTemplates:
       det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
       det = random.choice(["pewien", "jakiś"])
-
     return det
 
 
   def natural_language_sentence_generation(self, quantifiers, variables, negations, sub_obj_type = "subject"):
-    if sub_obj_type == "subject":
-      dets = None
-      template_id = "2q_n_"
-      dets = [self.quantifier_det(quantifiers[0]), self.quantifier_det(quantifiers[1])]
-      if negations[variables[0]] == True:
-        template_id += "neg_"
+      if sub_obj_type == "subject":
+        dets = None
+        template_id = "2q_n_"
+        dets = [self.quantifier_det(quantifiers[0]), self.quantifier_det(quantifiers[1])]
+        if negations[variables[0]] == True:
+          template_id += "neg_"
 
-      template_id += "v_"
-      if negations[variables[3]] == True:
-        template_id += "neg_" # NAPRAWA
-        if quantifiers[1] == "all":
-          dets[1] = "żaden"
-      
-      template_id += "n_" 
-      if negations[variables[1]] == True:
-        template_id += "neg_"
-      
-      template_id += "noun_"
-      if negations[variables[2]] == True:
-        template_id += "neg_" # NAPRAWA
-        if quantifiers[0] == "all" and dets[1] != "żaden":
-          dets[0] = "żaden"
-
-      template_id += "pl" if dets[0] in ["każdy", "pewien"] else "si"
-      
-      # ODMIANA DLA SUBJECT
-      subj = self.lexicon[variables[0]]["M"]
-      verb = self.lexicon[variables[3]]["si"]
-      if negations[variables[3]]:
-        obj = self.lexicon[variables[1]]["D"]
-      else:
-        obj = self.lexicon[variables[1]]["B"]
-      final_noun = self.lexicon[variables[2]]["N"]
-      
-      return self.template_natural_language(template_id,sub_obj_type).format(dets[0], subj, verb, dets[1], obj, final_noun)
-          
-    elif sub_obj_type == "object":
-      template_id = "2q_n_"
-      dets = [self.quantifier_det(quantifiers[0]), self.quantifier_det(quantifiers[1])]
-      if negations[variables[0]] == True:
-        template_id += "neg_"
-
-      template_id += "v_"
-      if negations[variables[3]] == True:
-        template_id += "neg_" # NAPRAWA
-        if quantifiers[0] == "all":
-          dets[0] = "żaden"
-          if quantifiers[1] == "exists":
-            dets[1] = "każdy"
-          else :
+        template_id += "v_"
+        if negations[variables[3]] == True:
+          template_id += "neg_" 
+          if quantifiers[1] == "all":
             dets[1] = "żaden"
-      
-      template_id += "n_" 
-      if negations[variables[1]] == True:
-        template_id += "neg_"
-      
-      template_id += "noun_"
-      if negations[variables[2]] == True:
-        template_id += "neg_"
+        
+        template_id += "n_" 
+        if negations[variables[1]] == True:
+          template_id += "neg_"
+        
+        template_id += "noun_"
+        if negations[variables[2]] == True:
+          template_id += "neg_" 
+          if quantifiers[0] == "all" and dets[1] != "żaden":
+            dets[0] = "żaden"
 
-      template_id += "pl" if dets[0] in ["każdy", "pewien"] else "si"
-      
-      # ODMIANA DLA OBJECT
-      subj = self.lexicon[variables[0]]["M"]
-      verb = self.lexicon[variables[3]]["si"]
-      if negations[variables[3]]:
-        obj = self.lexicon[variables[1]]["D"]
-      else:
-        obj = self.lexicon[variables[1]]["B"]
-      final_noun = self.lexicon[variables[2]]["N"]
-      
-      return self.template_natural_language(template_id, sub_obj_type).format(dets[0], subj, verb, dets[1], obj, final_noun)
-    
+        template_id += "si"
+        
+        # ODMIANA DLA SUBJECT
+        subj = self.lexicon[variables[0]]["M"]
+        verb = self.lexicon[variables[3]]["si"]
+        if negations[variables[3]]:
+          obj = self.lexicon[variables[1]]["D"]
+        else:
+          obj = self.lexicon[variables[1]]["B"]
+        final_noun = self.lexicon[variables[2]]["N"]
+        
+        # ODMIANA KWANTYFIKATORA OBIEKTU (det_obj)
+        det_obj = dets[1]
+        if det_obj == "każdy":
+            det_obj = "każdego"
+        elif det_obj == "żaden":
+            det_obj = "żadnego"
+        elif det_obj == "pewien":
+            det_obj = "pewnego"
+        elif det_obj == "jakiś":
+            det_obj = "jakiegoś"
+            
+        if dets[0] == "żaden" and negations[variables[3]]:
+            det_obj = "żadnego"
+        
+        return self.template_natural_language(template_id,sub_obj_type).format(dets[0], subj, verb, det_obj, obj, final_noun)
+          
+      elif sub_obj_type == "object":
+        template_id = "2q_n_"
+        dets = [self.quantifier_det(quantifiers[0]), self.quantifier_det(quantifiers[1])]
+        if negations[variables[0]] == True:
+          template_id += "neg_"
+
+        template_id += "v_"
+        if negations[variables[3]] == True:
+          template_id += "neg_" 
+          if quantifiers[0] == "all":
+            dets[0] = "żaden"
+            if quantifiers[1] == "exists":
+              dets[1] = "każdy"
+            else :
+              dets[1] = "żaden"
+        
+        template_id += "n_" 
+        if negations[variables[1]] == True:
+          template_id += "neg_"
+        
+        template_id += "noun_"
+        if negations[variables[2]] == True:
+          template_id += "neg_"
+
+        template_id += "si"
+        
+        # ODMIANA DLA OBJECT
+        subj = self.lexicon[variables[0]]["M"]
+        verb = self.lexicon[variables[3]]["si"]
+        if negations[variables[3]]:
+          obj = self.lexicon[variables[1]]["D"]
+        else:
+          obj = self.lexicon[variables[1]]["B"]
+        final_noun = self.lexicon[variables[2]]["N"]
+        
+        # ODMIANA KWANTYFIKATORA OBIEKTU (det_obj)
+        det_obj = dets[1]
+        if det_obj == "każdy":
+            det_obj = "każdego"
+        elif det_obj == "żaden":
+            det_obj = "żadnego"
+        elif det_obj == "pewien":
+            det_obj = "pewnego"
+        elif det_obj == "jakiś":
+            det_obj = "jakiegoś"
+            
+        if dets[0] == "żaden" and negations[variables[3]]:
+            det_obj = "żadnego"
+        
+        return self.template_natural_language(template_id, sub_obj_type).format(dets[0], subj, verb, det_obj, obj, final_noun)
 
   def generate_logic_formula(self, quantifiers, predicates, negations, x, y, sub_obj_type = "subject"):
-
     pred_func = {}
 
     if negations[predicates[0]] :
@@ -568,7 +551,6 @@ class RelativeTVTemplates:
 
 
   def generate_sentence_logic_pair(self, nouns, verbs, x, y):
-
     binary = random.choice(verbs)
     unary = random.sample(nouns, 3)
     quantifiers = [random.choice(["all", "exists"]), random.choice(["all", "exists"])]
@@ -598,71 +580,22 @@ class AnaphoraTemplates:
   def template_natural_language(self, template_name):
     templates = {
         "2q_n_v_n_v_si_si": "{} {} {} {} {} który {} {}",
-        "2q_n_v_n_v_si_pl": "{} {} {} {} {} którzy {} {}",
-        "2q_n_v_n_v_pl_si": "{} {} {} {} {} który {} {}",
-        "2q_n_v_n_v_pl_pl": "{} {} {} {} {} którzy {} {}",
         "2q_n_v_n_v_neg_si_si": "{} {} {} {} {} który nie {} {}",
-        "2q_n_v_n_v_neg_si_pl": "{} {} {} {} {} którzy nie {} {}",
-        "2q_n_v_n_v_neg_pl_si": "{} {} {} {} {} który nie {} {}",
-        "2q_n_v_n_v_neg_pl_pl": "{} {} {} {} {} którzy nie {} {}",
         "2q_n_v_neg_n_v_si_si": "{} {} nie {} {} {} który {} {}",
-        "2q_n_v_neg_n_v_pl_si": "{} {} nie {} {} {} który {} {}",
-        "2q_n_v_neg_n_v_si_pl": "{} {} nie {} {} {} którzy {} {}",
-        "2q_n_v_neg_n_v_pl_pl": "{} {} nie {} {} {} którzy {} {}",
         "2q_n_v_neg_n_v_neg_si_si": "{} {} nie {} {} {} który nie {} {}",
-        "2q_n_v_neg_n_v_neg_si_pl": "{} {} nie {} {} {} którzy nie {} {}",
-        "2q_n_v_neg_n_v_neg_pl_si": "{} {} nie {} {} {} który nie {} {}",
-        "2q_n_v_neg_n_v_neg_pl_pl": "{} {} nie {} {} {} którzy nie {} {}",
         "2q_n_v_n_neg_v_si_si": "{} {} {} {} nie-{} który {} {}",
-        "2q_n_v_n_neg_v_si_pl": "{} {} {} {} nie-{} którzy {} {}",
-        "2q_n_v_n_neg_v_pl_si": "{} {} {} {} nie-{} który {} {}",
-        "2q_n_v_n_neg_v_pl_pl": "{} {} {} {} nie-{} którzy {} {}",
         "2q_n_v_n_neg_v_neg_si_si": "{} {} {} {} nie-{} który nie {} {}",
-        "2q_n_v_n_neg_v_neg_si_pl": "{} {} {} {} nie-{} którzy nie {} {}",
-        "2q_n_v_n_neg_v_neg_pl_si": "{} {} {} {} nie-{} który nie {} {}",
-        "2q_n_v_n_neg_v_neg_pl_pl": "{} {} {} {} nie-{} którzy nie {} {}",
         "2q_n_v_neg_n_neg_v_si_si": "{} {} nie {} {} nie-{} który {} {}",
-        "2q_n_v_neg_n_neg_v_pl_si": "{} {} nie {} {} nie-{} który {} {}",
-        "2q_n_v_neg_n_neg_v_si_pl": "{} {} nie {} {} nie-{} którzy {} {}",
-        "2q_n_v_neg_n_neg_v_pl_pl": "{} {} nie {} {} nie-{} którzy {} {}",
         "2q_n_v_neg_n_neg_v_neg_si_si": "{} {} nie {} {} nie-{} który nie {} {}",
-        "2q_n_v_neg_n_neg_v_neg_si_pl": "{} {} nie {} {} nie-{} którzy nie {} {}",
-        "2q_n_v_neg_n_neg_v_neg_pl_si": "{} {} nie {} {} nie-{} który nie {} {}",
-        "2q_n_v_neg_n_neg_v_neg_pl_pl": "{} nie-{} nie {} {} nie-{} którzy nie {} {}",
         "2q_n_neg_v_n_v_si_si": "{} nie-{} {} {} {} który {} {}",
-        "2q_n_neg_v_n_v_si_pl": "{} nie-{} {} {} {} którzy {} {}",
-        "2q_n_neg_v_n_v_pl_si": "{} nie-{} {} {} {} który {} {}",
-        "2q_n_neg_v_n_v_pl_pl": "{} nie-{} {} {} {} którzy {} {}",
         "2q_n_neg_v_n_v_neg_si_si": "{} nie-{} {} {} {} który nie {} {}",
-        "2q_n_neg_v_n_v_neg_si_pl": "{} nie-{} {} {} {} którzy nie {} {}",
-        "2q_n_neg_v_n_v_neg_pl_si": "{} nie-{} {} {} {} który nie {} {}",
-        "2q_n_neg_v_n_v_neg_pl_pl": "{} nie-{} {} {} {} którzy nie {} {}",
         "2q_n_neg_v_neg_n_v_si_si": "{} nie-{} nie {} {} {} który {} {}",
-        "2q_n_neg_v_neg_n_v_si_pl": "{} nie-{} nie {} {} {} którzy {} {}",
-        "2q_n_neg_v_neg_n_v_pl_si": "{} nie-{} nie {} {} {} który {} {}",
-        "2q_n_neg_v_neg_n_v_pl_pl": "{} nie-{} nie {} {} {} którzy {} {}",
         "2q_n_neg_v_neg_n_v_neg_si_si": "{} nie-{} nie {} {} {} który nie {} {}",
-        "2q_n_neg_v_neg_n_v_neg_si_pl": "{} nie-{} nie {} {} {} którzy nie {} {}",
-        "2q_n_neg_v_neg_n_v_neg_pl_si": "{} nie-{} nie {} {} {} który nie {} {}",
-        "2q_n_neg_v_neg_n_v_neg_pl_pl": "{} nie-{} nie {} {} {} którzy nie {} {}",
         "2q_n_neg_v_n_neg_v_si_si": "{} nie-{} {} {} nie-{} który {} {}",
-        "2q_n_neg_v_n_neg_v_si_pl": "{} nie-{} {} {} nie-{} którzy {} {}",
-        "2q_n_neg_v_n_neg_v_pl_si": "{} nie-{} {} {} nie-{} który {} {}",
-        "2q_n_neg_v_n_neg_v_pl_pl": "{} nie-{} {} {} nie-{} którzy {} {}",
         "2q_n_neg_v_n_neg_v_neg_si_si": "{} nie-{} {} {} nie-{} który nie {} {}",
-        "2q_n_neg_v_n_neg_v_neg_si_pl": "{} nie-{} {} {} nie-{} którzy nie {} {}",
-        "2q_n_neg_v_n_neg_v_neg_pl_si": "{} nie-{} {} {} nie-{} który nie {} {}",
-        "2q_n_neg_v_n_neg_v_neg_pl_pl": "{} nie-{} {} {} nie-{} którzy nie {} {}",
         "2q_n_neg_v_neg_n_neg_v_si_si": "{} nie-{} nie {} {} nie-{} który {} {}",
-        "2q_n_neg_v_neg_n_neg_v_si_pl": "{} nie-{} nie {} {} nie-{} którzy {} {}",
-        "2q_n_neg_v_neg_n_neg_v_pl_si": "{} nie-{} nie {} {} nie-{} który {} {}",
-        "2q_n_neg_v_neg_n_neg_v_pl_pl": "{} nie-{} nie {} {} nie-{} którzy {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_si_si": "{} nie-{} nie {} {} nie-{} który nie {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_si_pl": "{} nie-{} nie {} {} nie-{} którzy nie {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_pl_si": "{} nie-{} nie {} {} nie-{} który nie {} {}",
-        "2q_n_neg_v_neg_n_neg_v_neg_pl_pl": "{} nie-{} nie {} {} nie-{} którzy nie {} {}"
+        "2q_n_neg_v_neg_n_neg_v_neg_si_si": "{} nie-{} nie {} {} nie-{} który nie {} {}"
       }
-
     return templates[template_name]
 
   def quantifier_det(self, quantifier):
@@ -671,7 +604,6 @@ class AnaphoraTemplates:
       det = random.choice(["każdy", "każdy"])
     elif quantifier == "exists":
       det = random.choice(["pewien", "jakiś"])
-
     return det
 
 
@@ -683,7 +615,7 @@ class AnaphoraTemplates:
       template_id += "neg_"
     template_id += "v_"
     if negations[variables[3]] == True:
-      template_id += "neg_"
+      template_id += "neg_" 
       if quantifiers[0] == "all":
         dets[0] = "żaden"
         if quantifiers[1] == "all":
@@ -700,35 +632,35 @@ class AnaphoraTemplates:
     if negations[variables[2]] == True:
       template_id += "neg_"
     
-    if dets[0] in ["każdy", "pewien"]:
-      template_id += "pl_"
-      pronoun = "ich"
-    else :
-      template_id += "si_"
-      pronoun = random.choice(["go", "go"])
-    
-    if dets[1] in ["każdy", "pewien"]:
-      template_id += "pl"
-    else :
-      template_id += "si"
+    template_id += "si_"
+    pronoun = "go"
+    template_id += "si"
 
     # ODMIANA DLA ANAPHORY
     subj = self.lexicon[variables[0]]["M"]
     verb1 = self.lexicon[variables[3]]["si"]
+    verb2 = self.lexicon[variables[2]]["si"]
     
     if negations[variables[3]]:
       obj = self.lexicon[variables[1]]["D"]
     else:
       obj = self.lexicon[variables[1]]["B"]
       
-    verb2 = self.lexicon[variables[2]]["si"]
+    det_obj = dets[1]
+    if det_obj == "każdy":
+        det_obj = "każdego"
+    elif det_obj == "żaden":
+        det_obj = "żadnego"
+    elif det_obj in ["pewien", "jakiś"]:
+        det_obj = random.choice(["pewnego", "jakiegoś"])
+        
+    if dets[0] == "żaden" and negations[variables[3]]:
+        det_obj = "żadnego"
 
-    return self.template_natural_language(template_id).format(dets[0], subj, verb1, dets[1], obj, verb2, pronoun)
+    return self.template_natural_language(template_id).format(dets[0], subj, verb1, det_obj, obj, verb2, pronoun)
 
     
-
   def generate_logic_formula(self, quantifiers, predicates, negations, x, y):
-
     pred_func = {}
 
     if negations[predicates[0]] :
@@ -761,9 +693,7 @@ class AnaphoraTemplates:
       fol = Exists(x, And(pred_func[predicates[0]], Exists(y, And(And(pred_func[predicates[1]], pred_func[predicates[2]]), pred_func[predicates[3]]))))
     return fol
 
-
   def generate_sentence_logic_pair(self, nouns, verbs, x, y):
-
     binary = random.sample(verbs, 2)
     unary = random.sample(nouns, 2)
     quantifiers = [random.choice(["all", "exists"]), random.choice(["all", "exists"])]
