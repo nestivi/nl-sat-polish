@@ -64,11 +64,11 @@ nouns = [
     "skryba", "bloger", "redaktor", "prezes", "kontroler_biletów", "zawiadowca_stacji", "geodeta",
     "wiertacz", "uczony", "analityk_ilościowy", "dyrektor_finansowy", "dyrektor_techniczny", "dyrektor_it", "informatyk", "więzień",
     "gość", "odwiedzający", "pomocnik", "żywiciel", "gospodarz", "duch", "rozgrywający", "strzelec",
-    "osadnik", "zdobywca", "cynik", "wiedźma", "kapitan", "analityk_biznesowy", "naukowiec_danych",
-    "handlowiec", "dyrektor_szkoły", "baletnica", "piłkarz", "krykiecista", "tenisista", "wykładowca",
+    "osadnik", "zdobywca", "cynik", "kapitan", "analityk_biznesowy", "naukowiec_danych",
+    "handlowiec", "dyrektor_szkoły", "piłkarz", "krykiecista", "tenisista", "wykładowca",
     "pacjent", "naukowiec_ai", "rowerzysta", "szachista", "strateg",
     "naukowiec", "rodzic", "agent_fbi", "obrońca", "napastnik", "watażka", "inżynier_nlp",
-    "arcymistrz", "mistrz", "król", "królowa", "rycerz", "książę", "księżniczka", "niemowlę", "dorosły",
+    "arcymistrz", "mistrz", "król", "rycerz", "książę", "dorosły",
     "doradca", "zapaśnik", "wojownik", "bokser", "pszczelarz", "dj", "skrzypek",
     "dyrygent", "gimnastyk"
 ]
@@ -80,35 +80,29 @@ count_furniture = [
 ]
 
 count_animals = [
-    "mrówkojad_afrykański", "pies", "alpaka", "pancernik", "mrówkojad", "pingwin",
-    "mrówka", "niedźwiedź", "bonobo", "bóbr", "ptak", "sowa", "motyl",
-    "bawół", "trzmiel", "żaba", "wieloryb", "bizon", "borsuk", "pawian",
-    "nosorożec", "wielbłąd", "kot", "kurczak", "gepard", "kakadu", "krowa", "krab",
-    "gąsienica", "szympans", "nur", "pająk", "krokodyl", "kojot", "szynszyla",
-    "kaczka", "jeleń", "delfin", "dingo", "osioł", "węgorz", "słoń", "emu", "goryl", "sokół",
-    "lis", "fretka", "gerbil", "pasikonik", "suseł", "koza", "hiena", "koń", "hipopotam",
-    "jaguar", "kangur", "lemur", "lew", "ryś", "jaszczurka", "świstak", "norka", "piżmak", "mysz",
-    "ara", "łoś", "traszka", "struś", "wydra", "świnia", "maskonur", "puma", "pelikan", "paw",
-    "królik", "wąż", "renifer", "szop", "szczur", "owca", "sęp", "wombat", "wilk", "guziec",
-    "mors", "łasica", "dzik", "zebra", "foka"
+    "mrówkojad_afrykański", "pies", "pancernik", "mrówkojad", "pingwin",
+    "niedźwiedź", "bonobo", "bóbr", "ptak", "motyl",
+    "bawół", "trzmiel", "wieloryb", "bizon", "borsuk", "pawian",
+    "nosorożec", "wielbłąd", "kot", "kurczak", "gepard", "krab",
+    "szympans", "nur", "pająk", "krokodyl", "kojot", 
+    "jeleń", "delfin", "dingo", "osioł", "węgorz", "słoń", "goryl", "sokół",
+    "lis", "gerbil", "pasikonik", "suseł", "koń", "hipopotam",
+    "jaguar", "kangur", "lemur", "lew", "ryś", "świstak", "piżmak", 
+    "łoś", "struś", "maskonur", "pelikan", "paw",
+    "królik", "wąż", "renifer", "szop", "szczur", "sęp", "wombat", "wilk", "guziec",
+    "mors", "dzik"
 ]
 
 verbs = [
     "lubić", "podziwiać", "robić", "psuć", "zatrudniać",
-    "uderzać", "zabijać", "walczyć", "dotykać", "zgładzić",
-    "aprobować", "bronić", "zastępować", "gonić", "polować",
-    "nie_lubić", "rozpoznawać", "rozumieć", "czuć",
-    "kochać", "nienawidzić", "imponować", "wiedzieć", "zauważać", "dostrzegać",
-    "widzieć", "pamiętać", "zaskakiwać", "woleć",
-    "rysować", "oskarżać", "uwielbiać", "doradzać", "doceniać",
-    "podchodzić", "zadziwiać", "potrzebować", "wołać", "wierzyć",
-    "naśladować", "służyć", "konsultować", "przekonywać", "krytykować",
-    "pragnąć", "wątpić", "zachęcać", "badać",
-    "karmić", "wybaczać", "przytulać", "prowadzić_dochodzenie", "całować",
-    "wspominać", "wisieć_dłużnym", "namawiać", "proponować", "obiecywać",
-    "uderzyć_pięścią", "strzelać", "grozić", "tolerować", "ostrzegać",
-    "szanować", "podziwiać_z_zachwytem", "fantazjować", "użytkować", "mordować",
-    "wspierać"
+    "uderzać", "zabijać", "zgładzić", "aprobować", "zastępować", 
+    "gonić", "rozpoznawać", "rozumieć", "czuć", "kochać", 
+    "zauważać", "dostrzegać", "widzieć", "pamiętać", "zaskakiwać", 
+    "woleć", "rysować", "oskarżać", "uwielbiać", "doceniać", 
+    "zadziwiać", "wołać", "naśladować", "konsultować", "przekonywać", 
+    "krytykować", "zachęcać", "badać", "karmić", "przytulać", 
+    "całować", "wspominać", "namawiać", "tolerować", "ostrzegać", 
+    "szanować", "mordować", "wspierać"
 ]
 
 # =========================================================================
@@ -463,16 +457,16 @@ def parse_args():
         "--fragment",
         type=str,
         default=None,
-        required = True,
-        help="The name of the language fragment to generate the data",
+        required=True,
+        help="The name of the language fragment to generate the data (e.g. 'syllogistic', 'relational syllogistic')",
     )
 
     parser.add_argument(
         "--sampling_file",
         type=str,
         default=None,
-        required = True,
-        help="File contianing the disribution of satisfiablity of the language fragment",
+        required=True,
+        help="File containing the distribution of satisfiablity of the language fragment",
     )
 
     parser.add_argument(
@@ -528,7 +522,7 @@ def parse_args():
         "--prob",
         type=float,
         default=0.5,
-        help="probability of sentences belong to the more complex sub fragments whithin a datapoint",
+        help="probability of sentences belong to the more complex sub fragments within a datapoint",
     )
 
     parser.add_argument(
@@ -541,17 +535,15 @@ def parse_args():
     parser.add_argument(
         "--output_file",
         type=str,
-        default='fragment.csv',
+        default='fragment_pl.csv',
     )
 
     args = parser.parse_args()
-
     return args
 
 
 class LangaugeFragmentSAT:
-
-  def __init__(self, functions, lexicon, language_fragment, df_hard, min_a = 3, max_a = 8, min_b = 3, max_b = 8, timeout = 10000, prob = 0.5, a_b = 2):
+  def __init__(self, functions, lexicon, language_fragment, df_hard, min_a=3, max_a=8, min_b=3, max_b=8, timeout=10000, prob=0.5, a_b=2):
 
     # PRZEKAZANIE LEKSYKONU DO SZABLONÓW
     self.syl_templates = SyllogisticTemplates(functions, lexicon)
@@ -573,9 +565,8 @@ class LangaugeFragmentSAT:
     self.prob = prob
     self.dist = beta(a_b, a_b)
 
-  def generate_syllogistic(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
+  def generate_syllogistic(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
     s = Solver()
-
     list_fol = []
     list_sentences = []
     list_quantifiers = []
@@ -585,8 +576,7 @@ class LangaugeFragmentSAT:
     prob = 1
 
     for i in range(num_clauses):
-      logic, sentence, quantifiers  = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y, negations = True)
-    
+      logic, sentence, quantifiers = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y, negations=True)
       list_fol.append(logic)
       list_sentences.append(sentence)
       list_quantifiers.append(quantifiers)
@@ -597,10 +587,31 @@ class LangaugeFragmentSAT:
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  def generate_relative_clauses(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
-
+  def generate_syllogistic_minus(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
+    # Dodałem tę metodę, bo w `generate_datapoint` jest do niej odwołanie, a brakowało jej w pierwotnym kodzie!
     s = Solver()
+    list_fol = []
+    list_sentences = []
+    list_quantifiers = []
 
+    unary_preds = random.sample(nouns, unary)
+    binary_preds = random.sample(verbs, binary)
+    prob = 1
+
+    for i in range(num_clauses):
+      logic, sentence, quantifiers = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y, negations=False)
+      list_fol.append(logic)
+      list_sentences.append(sentence)
+      list_quantifiers.append(quantifiers)
+
+    s.add(list_fol)
+    s.set("timeout", self.timeout)
+    sat = str(s.check())
+
+    return list_fol, list_sentences, list_quantifiers, sat, prob
+
+  def generate_relative_clauses(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
+    s = Solver()
     list_fol = []
     list_sentences = []
     list_quantifiers = []
@@ -611,26 +622,23 @@ class LangaugeFragmentSAT:
     prob = self.prob
 
     for i in range(num_clauses):
-      if random.uniform(0,1) < prob :
-        logic, sentence, quantifiers  = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-      else :
-        logic, sentence, quantifiers  = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+      if random.uniform(0,1) < prob:
+        logic, sentence, quantifiers = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+      else:
+        logic, sentence, quantifiers = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
 
       list_fol.append(logic)
       list_sentences.append(sentence)
       list_quantifiers.append(quantifiers)
 
     s.add(list_fol)
-
     s.set("timeout", self.timeout)
     sat = str(s.check())
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  def generate_relational_syllogistic(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
-
+  def generate_relational_syllogistic(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
     s = Solver()
-
     list_fol = []
     list_sentences = []
     list_quantifiers = []
@@ -641,30 +649,27 @@ class LangaugeFragmentSAT:
     prob = self.prob
 
     for i in range(num_clauses):
-      if random.uniform(0,1) < prob :
-        logic, sentence, quantifiers  = self.relsyl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-      else :
+      if random.uniform(0,1) < prob:
+        logic, sentence, quantifiers = self.relsyl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+      else:
         random_fragment = random.choice(["syl", "rel"])
         if random_fragment == "syl":
-          logic, sentence, quantifiers  = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-        else :
-          logic, sentence, quantifiers  = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+          logic, sentence, quantifiers = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+        else:
+          logic, sentence, quantifiers = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
         
       list_fol.append(logic)
       list_sentences.append(sentence)
       list_quantifiers.append(quantifiers)
 
     s.add(list_fol)
-
     s.set("timeout", self.timeout)
     sat = str(s.check())
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  def generate_relative_tv(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
-
+  def generate_relative_tv(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
     s = Solver()
-
     list_fol = []
     list_sentences = []
     list_quantifiers = []
@@ -674,16 +679,16 @@ class LangaugeFragmentSAT:
 
     prob = self.prob
     for i in range(num_clauses):
-      if random.uniform(0,1) < prob :
-        logic, sentence, quantifiers  = self.relative_tv_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-      else :
+      if random.uniform(0,1) < prob:
+        logic, sentence, quantifiers = self.relative_tv_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+      else:
         random_fragment = random.choice(["syl", "re-syl", "rel"])
         if random_fragment == "syl":
-          logic, sentence, quantifiers  = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-        elif random_fragment == "re-syl" :
-          logic, sentence, quantifiers  = self.relsyl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-        else :
-          logic, sentence, quantifiers  = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+          logic, sentence, quantifiers = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+        elif random_fragment == "re-syl":
+          logic, sentence, quantifiers = self.relsyl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+        else:
+          logic, sentence, quantifiers = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
       list_fol.append(logic)
       list_sentences.append(sentence)
       list_quantifiers.append(quantifiers)
@@ -694,10 +699,8 @@ class LangaugeFragmentSAT:
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  def generate_anaphora(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
-
+  def generate_anaphora(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
     s = Solver()
-
     list_fol = []
     list_sentences = []
     list_quantifiers = []
@@ -707,18 +710,18 @@ class LangaugeFragmentSAT:
 
     prob = self.prob
     for i in range(num_clauses):
-      if random.uniform(0,1) < prob :
-        logic, sentence, quantifiers  = self.anaphora_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-      else :
-        random_fragment = random.choice(["syl", "re-syl", "rel","syl", "re-syl", "rel", "rel_tv"])
+      if random.uniform(0,1) < prob:
+        logic, sentence, quantifiers = self.anaphora_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+      else:
+        random_fragment = random.choice(["syl", "re-syl", "rel", "rel_tv"]) # Uprościłem niepotrzebnie powtarzające się opcje
         if random_fragment == "syl":
-          logic, sentence, quantifiers  = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-        elif random_fragment == "re-syl" :
-          logic, sentence, quantifiers  = self.relsyl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-        elif random_fragment == "rel" :
-          logic, sentence, quantifiers  = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
-        else :
-          logic, sentence, quantifiers  = self.relative_tv_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+          logic, sentence, quantifiers = self.syl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+        elif random_fragment == "re-syl":
+          logic, sentence, quantifiers = self.relsyl_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+        elif random_fragment == "rel":
+          logic, sentence, quantifiers = self.relative_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
+        else:
+          logic, sentence, quantifiers = self.relative_tv_templates.generate_sentence_logic_pair(unary_preds, binary_preds, x, y)
       list_fol.append(logic)
       list_sentences.append(sentence)
       list_quantifiers.append(quantifiers)
@@ -729,7 +732,7 @@ class LangaugeFragmentSAT:
 
     return list_fol, list_sentences, list_quantifiers, sat, prob
 
-  def generate_datapoint(self, nouns, verbs, x, y, unary = 3, binary = 3, num_clauses = 6):
+  def generate_datapoint(self, nouns, verbs, x, y, unary=3, binary=3, num_clauses=6):
     if self.langauge_fragment == "syllogistic":
       time.sleep(0.01)
       return self.generate_syllogistic(nouns, verbs, x, y, unary, binary, num_clauses)
@@ -747,21 +750,16 @@ class LangaugeFragmentSAT:
       time.sleep(0.01)
       return self.generate_anaphora(nouns, verbs, x, y, unary, binary, num_clauses)
 
-  def generator(self):
-    while True:
-      yield
-
   def create_df(self, nouns, verbs, x, y, num_datapoints=10000):
-
     data = {
-        "formulae" : [],
-        "sentences" : [],
-        "quantifiers" : [],
-        "sat" : [],
-        "unary" : [],
-        "binary" : [],
-        "num_clauses" : [],
-        "prob" : []
+        "formulae": [],
+        "sentences": [],
+        "quantifiers": [],
+        "sat": [],
+        "unary": [],
+        "binary": [],
+        "num_clauses": [],
+        "prob": []
     }
     
     count = 0
@@ -770,15 +768,12 @@ class LangaugeFragmentSAT:
     progress_bar = tqdm(range(num_datapoints))
 
     while (True):
-
-      if (self.langauge_fragment == "syllogistic") or (self.langauge_fragment == "relative clauses") or ((self.langauge_fragment == "syllogistic minus")):
-
+      if (self.langauge_fragment == "syllogistic") or (self.langauge_fragment == "relative clauses") or (self.langauge_fragment == "syllogistic minus"):
         sample = self.min_a + self.dist.rvs(size=1) * (self.max_a - self.min_a)
-
         unary = round(sample[0])
         num_clauses = round(random.uniform(self.min_m_a, self.max_m_a) * unary)
         binary = 1
-      else :
+      else:
         unary = random.randint(self.min_a, self.max_a)
         num_clauses = round(random.uniform(self.min_m_a, self.max_m_a) * unary)
         m_a_ratio = min(self.m_a, key=lambda x:abs(x - num_clauses/unary))
@@ -787,8 +782,9 @@ class LangaugeFragmentSAT:
         max_m_b = self.df_hard[self.df_hard['m/a'] == m_a_ratio]['m/b'].max()
         
         binary = round(num_clauses / random.uniform(min_m_b, max_m_b))
-        if (binary > self.max_b) or (binary < self.min_b) :
+        if (binary > self.max_b) or (binary < self.min_b):
           continue 
+
       list_fol, list_sentences, list_quantifiers, sat, prob = self.generate_datapoint(nouns, verbs, x, y, unary, binary, num_clauses)
 
       iter += 1
@@ -804,56 +800,49 @@ class LangaugeFragmentSAT:
         data["prob"].append(prob)
 
         count += 1
-
         progress_bar.update(1)
                   
-      if count >= num_datapoints :
+      if count >= num_datapoints:
         break
-
-      if iter % 1000 == 0 :
-        print(iter, count)
 
     df = pd.DataFrame(data)
     return df
 
 
 def main():
-
     args = parse_args()
 
     set_param(proof=True)
-
     ctx = Context()
-
     Z = IntSort()
     B = BoolSort()
 
     x, y = Ints('x y')
 
     functions = {}
-    for f in nouns :
+    for f in nouns:
         functions[f] = Function(f, Z, B)
 
-    for f in verbs :
+    for f in verbs:
         functions[f] = Function(f, Z, Z, B)
 
     df_agg = pd.read_csv(args.sampling_file)
     df_hard = df_agg[(df_agg['is_sat'] < args.max_ab) & (df_agg['is_sat'] > args.min_ab)]
 
-    # PRZEKAZANIE LEKSYKONU DO KLASY ZARZĄDZAJĄCEJ
+    # Inicjalizacja z poprawnymi nazwami
     satFragment = LangaugeFragmentSAT(functions,
-                                       lexicon,  # <--- ZMIANA
+                                       lexicon, 
                                        args.fragment, 
                                        df_hard, 
-                                       min_a = args.min_a, 
-                                       max_a = args.max_a, 
-                                       min_b = args.min_b, 
-                                       max_b = args.max_b, 
-                                       timeout = args.time_out, 
-                                       prob = args.prob)
+                                       min_a=args.min_a, 
+                                       max_a=args.max_a, 
+                                       min_b=args.min_b, 
+                                       max_b=args.max_b, 
+                                       timeout=args.time_out, 
+                                       prob=args.prob)
+    
     df = satFragment.create_df(nouns, verbs, x, y, num_datapoints=args.num_datapoints)
-
-    df.to_csv(args.output_file, index = False)
+    df.to_csv(args.output_file, index=False)
 
 if __name__ == "__main__":
     main()
